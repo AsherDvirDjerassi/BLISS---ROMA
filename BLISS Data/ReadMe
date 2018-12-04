@@ -1,0 +1,2 @@
+In order for to merge the data as the r code does, this data is to be downloaded such that the state data files not in the folder M_M1 are used to create the file list. 
+The data file in the M_M1 folder is used first - it is the reference data set that all the other dataframes are combined with.
