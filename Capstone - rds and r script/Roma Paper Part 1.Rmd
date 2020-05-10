@@ -1,0 +1,1240 @@
+---
+title: 'Sources of Ethnic Inequality in Bulgaria: Evidence of Roma Discrimination'
+author: "Asher Dvir-Djerassi"
+date: ''
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    number_sections: yes
+  word_document:
+    toc: no
+  bookdown::pdf_book:
+    toc: no
+fontsize: 11pt
+geometry: margin = 1.5in
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{lipsum}
+- \usepackage{dcolumn}
+- \usepackage{rotating, graphicx}
+- \usepackage{float}
+- \usepackage{setspace}
+- \onehalfspacing
+- \usepackage[utf8]{inputenc}
+nocite: '@*'
+bibliography: bibliography.bib
+subtitle: 'Capstone -- Rough Draft'
+abstract: Bulgarian Roma, who constitute roughly 10 percent of Bulgaria's population,
+  unambiguously face some of the most egregious material poverty and discrimination
+  in contemporary Europe. Corollary, income inequality between Roma and non-Roma in
+  contemporary Bulgaria is dramatic. Mean and median monthly net wages of Roma are
+  roughly 60 percent that of non-Roma earnings. In terms of total net monthly household
+  income, Roma households saw average and median incomes half the size of non-Roma
+  households. The aim of this paper is to decompose the factors leading to this inequality by   
+  identifying the extent to which differences in endowments -- e.g. differences in educational 
+  attainment, regional differences, household composition, and demographics -- explain inequalities 
+  between Roma and non-Roma versus the role of factors specific to Roma -- e.g. employer
+  discrimination, structural discrimination, and any other characteristics specific to this ethnic
+  group. By applying the World Bank's 2013 Bulgarian Longitudinal Inclusive Society
+  Survey to a log-linear model, there is clear evidence that belonging to the Roma
+  ethnicity depreciates labor market earnings as well as total household income when
+  controlling for other relevant labor market characteristics. Furthermore, via a
+  Blinder-Oaxaca Decomposition, the contribution of different factors to the gap in
+  economic outcomes between Bulgarian Roma and non-Roma are estimated. The estimates
+  produced by both the Blinder-Oaxaca Decomposition and the log-linear model provide
+  clear evidence that factors like structural and employment discrimination are driving
+  economic inequality between Bulgarian Roma and non-Roma, rather than factors like
+  educational or demographic differences.
+---
+\inputencoding{latin2}
+
+
+\newpage
+\tableofcontents
+
+```{r warning=FALSE, message=FALSE, include=FALSE}
+### -------- Packages ---------- ###
+#NOTE: additional packages are also uploaded below when needed. 
+
+#install.packages("tinytex")
+#tinytex::install_tinytex(force = TRUE)
+
+#install.packages("bookdown")
+library("bookdown")
+#install.packages("survey")
+library("survey")
+#install.packages("RSQLite")
+library("RSQLite") 
+#install.packages("tidyverse")
+library("tidyverse")
+#install.packages("RefManageR")
+library("RefManageR")
+#install.packages("foreign")
+library("foreign")
+suppressPackageStartupMessages(library("dplyr"))
+library("knitr")
+#install.packages("ggplot2")
+library("ggplot2")
+#install.packages("Hmisc")
+library("Hmisc")
+#install.packages("lattice")
+library("lattice") 
+#install.packages("gridExtra")
+library("gridExtra") 
+#install.packages("scales")
+library("scales")
+#options(kableExtra.latex.load_packages = TRUE)
+#install.packages("kableExtra")
+library("kableExtra")
+#install.packages("sjPlot")
+library("sjPlot")
+#install.packages("stargazer")
+library("stargazer")
+#install.packages("xtable")
+library("xtable") 
+#install.packages("texreg")
+library("texreg")
+#install.packages("magrittr")
+library("magrittr")
+#install.packages("survey")
+library("survey")
+#install.packages("tableone")
+library("tableone")
+#install.packages("data.table")
+library("data.table")
+#install.packages("oaxaca")
+library("oaxaca")
+#install.packages("olsrr")
+library("olsrr")
+#install.packages("lmtest")
+library("lmtest")
+#install.packages("sandwich")
+library("sandwich")
+#install.packages("tableone")
+library("tableone")
+#install.packages("texreg")
+library("texreg")
+#install.packages("ggthemes") 
+library(ggthemes) 
+
+
+
+### ------ Set Working Directory ###
+
+#setwd("/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Data/Project Proposal")
+
+### -------- Create .bib file from Zotero  ---------- ###
+
+#Link Zotero account to create bibliography in 
+user_id = 2693449 #Zotero userID
+
+collection_id = "7HMW3TNA" #Collection Key - The collection id is just the last character set after collectionKey/ at the end of the collection’s URL. https://www.zotero.org/napoleon_asher/items/collectionKey/7HMW3TNA
+
+private_key = "UW0LHvayXhxsAYr3jpIjtA1N" # private key of zetero account can be created through the following steps: Zotero account, Home --> Settings--> Feeds/API --> then "click on "Create new private key"
+
+biblio <- ReadZotero(user = user_id, .params = list(collection = collection_id, key = private_key )) #Creates an object called biblio which reads the reference material from the Zotero collection for which the reference IDs above link to. 
+
+WriteBib(biblio, file = "bibliography.bib", biblatex = TRUE, append = FALSE, verbose = TRUE) #Creates a .bib document in the the working directory. Name the .bib file what the bibliography is called in the intro section (i.e. bibliography: bibliography.bib)
+
+```
+
+\newpage
+# Introduction
+
+Bulgarian Roma unambiguously face some of the most egregious social exclusion, material poverty, and discrimination in contemporary Europe. Presently, Bulgarian Roma -- often pejoratively termed gypsies or tsigani -- constitute roughly 10 percent of the population of Bulgaria [@european_commission_european_2014].^[The analysis for this paper was conducted in R. The Rmarkdown file used to create this PDF can be found at the Github repository for this project: https://github.com/AsherDvirDjerassi/BLISS---ROMA .] The European Union Agency for Fundamental Rights along with other EU agencies, the United Nations Development Program, the World Bank, and the Open Society Foundation have identified the degree of Roma discrimination and ethnic inequality in Bulgaria as abhorrent [*see* @ram_europeanized_2014; @the_economist_left_2015 ].^[According to the Bulgarian national census, Roma make up 5% of the population. However, it is widely agreed that the census dramatically underestimates the true size of the Roma population due to lack of proper registration of Roma, distrust of officials, and intentional obscuration of ethnicity for fear of prejudice (*see* @european_commission_european_2014 and @the_economist_left_2015).]  
+
+These organizations and other stakeholders have made efforts to curb discrimination towards and alleviate material poverty among Bulgarian Roma.^[One such effort was the Social Inclusion Project, a joint EU, World Bank, and Bulgarian initiative launched in 2008 and concluded in 2015. Funded by a €40 million loan guarantee from the World Bank, €73.43 million in contributions from the European Social Fund, and matched by €23.30 million in funding from local communities, this single initiative guaranteed funding equal to a quarter of a percent of Bulgaria's 2007 GDP of €48.8 billion [*see* @independent_evaluation_group_project_2018].] From 2007 to 2013, 3.2 percent (or €37 million) of the funds drawn from the European Social Fund by Bulgaria were dedicated for the explicit purpose of integrating disadvantaged people, namely Roma [@european_commission_european_2014]. Despite substantial funding dedicated towards Bulgarian Roma, the European Commission (2014) has argued that funding levels are far from sufficient to deal with the extremity of the inequality of opportunity Bulgarian Roma face. The Commission claims that Bulgaria should allocate 20 percent of the funds it is eligible to withdraw from the European Social Fund for the purpose of reducing poverty and social exclusion among Roma; this would have translated into €231 million for the 2007--2013 period, or roughly half a percent of annual GDP.
+
+Despite calls by civil society and the European Union -- alongside abundant evidence of extreme material poverty and lack of opportunity among Bulgarian Roma -- the current political make-up of Bulgaria has ensured that efforts to reduce inequality and discrimination against Roma are waning. Rather, forces of discrimination have been on the rise since the 2017 Bulgarian elections when a coalition of three ultra-rightwing parties were brought into government by Boyko Borisov, who has held the office of prime minister for a nearly continuously stretch since 2009 [*see* @dnevnik_volen_2018]. In order to maintain control of the government after an election that significantly reduced the size of the Citizens for European Development of Bulgaria (GERB), the prime minister’s party went into coalition with the United Patriots, a coalition of three ultra nationalist, anti-Roma parties that was formed in 2016.^[The following parties constitute the United Patriots: The VMRO (a faction of the Bulgarian National Movement), the National Front for the Salvation of Bulgaria (NFSB), and Ataka.]
+
+As of October 2018, 7 out of 20 ministers and deputies minister in government come from the ultra-rightwing United Patriots. Valeri Simeonov, co-leader of the ultra-right wing coalition, currently holds the position of the Deputy Prime Minister and is tasked with overseeing Bulgaria’s National Council on Co-operation on Ethnic and Integration Issues, which is intended to coordinate policy on minority rights with Bulgarian and European NGOs. Despite holding a position designed to defend minority rights, Simeonov has called the country's Roma minority "ferocious humanoids" whose women "have the instincts of street dogs"[ @katie_french_far-right_2018].
+
+## Evidence of Systematic Prejudice
+
+Drawing from survey data, Alexey Pamporov, a leading Bulgarian sociologist with the Bulgarian Academy of Sciences, writes that "approximately 30% of Bulgarians do not want Roma people living in the country"[-@pamporov_drunken_2012]. Stereotypes of Roma as "lazy," "dirty," "deceitful," and "thievish" proliferate throughout Bulgarian media, popular culture, and mainstream discourse. Pamporov argues that the prevalence of these deleterious stereotypes reinforces residential and educational segregation and leads to labor market discrimination.
+
+Pamporov, along with researchers from the Open Society Foundation, conducted content analysis on Bulgaria's leading newspapers in the few months preceding the 2009 parliamentary elections. Of the articles analyzed, 716 were identified as mentioning Roma either directly or indirectly, while "61.5% seemingly attempted to be politically correct.” These articles used "the endonyms Roma, Romani or other derivatives from these terms, [but] in the majority of articles, referring to ethnicity did not improve the articles' value and informativeness...[A quarter of articles] used the exonym Gypsies. In 55.4% of cases the protagonists are referred to as swarthy... Ethnic identity is not mentioned at all in only 1% of the articles" [@pamporov_drunken_2012, p. 145]. While Bulgarian newspapers vary widely in the share of articles that provide positive, negative, or neutral representations of Roma, typically between 11 and 33 percent of a newspaper's coverage was classified as negative. 
+
+In a set of anonymous questionnaires presented in 2011 to ethnic Bulgarians working as doctors, social workers, or teachers, it is clear that while most ethnic minorities in Bulgaria generally have positive associations, Roma do not [@metodieva_beyond_2012]. Pomaks (ethnic-Bulgarians whose ancestors converted to Islam) and Turks are most strongly associated with being "hardworking" and "religious," while Jews and Armenians are associated with business acumen and cleverness. In sharp contrast, "Roma are depicted as criminals, lazy, dirty, liars, and uneducated both by the national level survey and in the target groups’ samples."  
+
+A minority of respondents -- 11.8 percent of doctors, 26.6 percent of teachers, and 4.6 percent of social workers --  agreed with the following eugenical statement: “There should be lower educational standards for Roma children, because they are not able to achieve the result of the others." To further address any eugenical prejudices members of these three professions may have, those surveyed were asked whether Roma children should face a different, 'lightweight' curriculum. Specifically, respondents were asked to agree or disagree with the following statement: "Roma children are able most of all to sing and dance well, it is in their blood. Therefore, the key to their integration is music education and labor training." A large share of respondents claimed to neither agree nor disagree (21.3 percent of doctors, 8.6 percent of teachers, and a small fraction of social workers). While this degree of ambivalence is in and of itself indicative of eugenical prejudice, an additional 31.4 percent of doctors, 39.1 percent of teachers, and 20 percent of social workers agreed with this statement.  
+
+Likewise, 63.5 percent of doctors, 67.1 percent of teachers, and 49.1 percent of social workers agreed with the following statement: “Roma women give birth to many children in order to live on social benefits, which they receive for these children." Furthermore, 35.5 percent of doctors, 33.6 percent of teachers, and 35.1 percent of social workers also agreed with this statement: "Roma suffer from many hereditary diseases, because of marriage and sexual relations between very close relatives."
+
+Given such widespread agreement with prejudiced ideas amongst some of the most important stewards of social institutions, it should not come as a surprise that a mere 45.6 percent of ethnic Bulgarians would agree to live in the same neighborhood as Roma @metodieva_beyond_2012. Likewise, this same 2012 survey reports that a mere 12 percent of ethnic Bulgarians would be willing to marry a Roma person.
+
+
+## Ethnic Inequality and Discrimination in Bulgaria
+
+While it is beyond the scope of this article to establish the complete array of possible consequences that such stereotypes engender, the pervasiveness of negative stereotypes gives strong reason to believe that discrimination against Bulgarian Roma is widespread and plays a significant role in shaping the gap between Roma and ethnic Bulgarians. The EU Agency for Fundamental Rights surveyed minorities across Europe to find the relative incidence of hate-motivated harassment. Roma across Europe experienced the highest rate of hate-motivated harassment of any ethnic minority [@european_union_agency_for_fundamental_rights_survey_2014]. Furthermore, of all ethnic minorities in the EU, Bulgarian Roma have the second lowest level of trust in their legal system after Estonian Roma @european_union_agency_for_fundamental_rights_survey_2014
+
+Amnesty International (2018) claims that "marginalization and widespread discrimination against Roma persists." In addition to employment discrimination, Amnesty stresses the obstacles Bulgarian Roma face in accessing public services, particularly education, healthcare, housing, and infrastructure (particularly sewage, trash collection, and clean roads). The most striking and visceral manifestation of ethnic inequality in Bulgaria is the severe inadequacy of infrastructure and housing in Roma communities. According to a 2011 survey conducted by the EU Agency for Fundamental Rights, which surveyed Roma households in primarily Roma neighborhoods and ethnic Bulgarians that lived near to these communities, 39 percent of Roma dwellings had no piped water inside compared with 4 percent of non-Roma dwellings nearby (@european_union_agency_for_fundamental_rights_survey_2014). 75 percent of Roma dwellings had no indoor toilet, relative to 31 percent of non-Roma dwellings nearby. Roma versus non-Roma with dwellings connected to sewage was 39 versus 13 percent, while access to electricity was 7 percent versus 1 percent. 
+
+The root of this widespread segregation, inadequate housing, and subpar infrastructure lies partly in the forced settlement of Bulgarian Roma in 1958. After the completion of full land collectivization by the Communist regime, the Bulgarian politburo outlawed the often migratory living patterns of Roma.^[*See* @ilieva_number_2012 discussion of the Bulgarian Census]. Like the Communist Party's policy towards Bulgarian Turks, ethnic self-identification was heavily discouraged and collective advocacy for Roma causes was censured. The combination of sudden urbanization, lack of political representation, and prejudice on the part of the Communist regime created conditions where Roma were segregated into ghettos. After the fall of communism in the early 1990s, the collapse of state structures allowed for Bulgarian Roma to effectively squat in a manner comparable to Brazilian favelas and slums found elsewhere in the Global South [*see* @barany_politics_2000]. Such communities lacked and continue to lack de jure access to public services, as the state does not recognize a formal responsibility as it does in providing public services to legal dwellings. 
+
+Despite clear evidence of discrimination, Bulgarian Roma report feeling discriminated against the least often among European Roma. When asked if a Bulgarian Roma person felt they had been discriminated against in the past 12 months, 30 percent of respondents said yes -- markedly lower than the typical response in Europe.^[*See* @european_union_agency_for_fundamental_rights_second_2017] Meanwhile, a mere 19 percent of Bulgarian Roma active in the labor market believed that they had been discriminated against when seeking work in the past 5 years. Two percent of working age Bulgarian Roma respondents claimed that they were not looking for work because "Roma are not hired." In contrast, the typical response for Roma in other European countries is around 4 to 6 percent. The only other countries with lower responses to this question were Hungary and Spain.  
+
+These survey responses are puzzling. Despite widespread inequality, discrimination is not felt, particularly when it comes to the labor market. This begs the question of what relative role labor market discrimination plays in determining economic inequality between ethnic groups in Bulgaria. In terms of labor market outcomes, the gap between Roma and ethnic Bulgarians is very wide. For those of prime working age, 20--64 years old, 68 percent of non-Roma Bulgarians had at least part-time employment compared to 49 percent of Roma.^[The employment rate of ethnic Bulgarians comes from Eurostat, while the employment rate for Roma was collected in the second wave of the European Union Minorities and Discrimination Survey, 2016.]
+
+However, it may be the case that discrimination is not as instrumental in explaining this gap as the ubiquity of negative stereotypes and prejudice may suggest. Rather, it may be the case that the gap in labor market outcomes between Roma and the rest can be largely explained by differences in relevant labor market characteristics that are outside of ethnicity, such as how much education one has, the skills one possesses, and the region one lives in. In terms of education, Roma have paltry educational outcomes relative to ethnic Bulgarians. According to the 2011 Fundamental Rights Agency Roma Survey, 67 percent of adult Roma reported leaving school before the age of 16. In contrast, a mere 26 percent of non-Roma living in the same communities as these Roma reported leaving school before 16. 
+
+Decomposing the relative impact of factors driving ethnically-based economic inequality is essential to the enterprise of bridging this ethnic divide. With funds dedicated to the plight of Bulgarian Roma withering alongside the rise of ultra-rightwing political parties, ensuring the efficiency of each euro dedicated to ameliorating Roma poverty has even more urgency.
+
+\newpage
+
+# Research Questions
+
+This paper seeks to answer the following: What accounts for economic inequalities between ethnic Bulgarians and the predominant ethnic minorities in Bulgaria -- Roma and Turks?
+
+What is the impact of differences in relevant economic characteristics, such as educational attainment and family composition, on income inequality, differences in rates of government assistance use, and employment? What is the role of more opaque and unobservable forces, such as labor market discrimination and structural discrminiation,on observable inequities? 
+
+In order to answer these questions, this paper is organized around questions: 
+
+1) Are there measurable and statistically significant differences between ethnic minority households sampled from segregated and non-segregated neighborhoods? Answering this question is able to disentagle whether there is a segregation effect. Additionally, by answering these query evidence would be provided on the extent to which the sample of minority households is systematically downwardly biased. 
+
+2) Independent of relevant observables, is there evidence that ethnic minorities see differences in household income, labor market earnings, government income, and employment rates from ethnic Bulgarians? 
+
+3) According to a Blinder-Oaxaca demoposition, what are the factors driving inequality between ethnic groups in Bulgaria? What is the role of endowments versus characteristics specific to ethnic minorities? Are the factors that drive inequality between Turks and Bulgarians the same as those that drive inequality between Rome and Bulgarians? 
+
+Through answering these three sets of questions, this paper attempts to comment on the forces shaping inequality between ethnic minorities in Bulgaria. 
+
+
+\newpage 
+
+# Data
+
+This paper uses the Bulgarian Longitudinal Inclusive Society Survey (BLISS). BLISS is part of a larger panel survey collected between February 2010 and April 2013 from a representative sample of Bulgarian households at the behest of the World Bank and the Open Society Institute--Sofia. Information on demographics, education, taxes, transfers, and other relevant labor market information on the household and individual household members were collected. 
+
+Distinctive among comparable surveys in Bulgaria, this panel survey can identify a representative sample of those who identify as ethnically Roma and ethnically Bulgarian. To garner sufficient variation among Bulgarian Roma, BLISS surveyed a greater number of Roma households than would be proportionate to their share of the population (i.e. a ‘booster’ sample). 
+
+This representative survey was able to follow households and the members of those households across the survey period (February 2010 to April 2013) with quite little attrition. The planned size of the main sample in the first round was 2,384 households, and 99% of this sample was realized. A Bulgarian Roma booster sample of 296 households was planned; 99% of surveyed households responded. 
+
+
+```{r message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+## Data Preparation
+
+##The procedure for merging the constituent data-sets is quite complicated, therefore, I have included an rds file on github that may be easily download in lieu of merging and cleaning the data as I originally did. However, in the r chunk below, the code used to merge the constituent data-sets is shown, albeit commented-out.
+
+#NOTE: This prodecure can be reproduced most easily by downloading the data files from the Github repo below. The data files are organized such that a reference file, BGR_2013_BLISS_v01_M_M1.dta, is in a seperate folder (M_M1) from the files that make up 'file_list': https://github.com/AsherDvirDjerassi/BLISS---ROMA/tree/master/BLISS%20Data
+
+#Create a data frame, which is set equal to one dataset that has all observations and household and member IDs (i.e. HH_ID and HHM_ID). I use the first dataset in the collection of the BLISS survey (i.e. BGR_2013_BLISS_v01_M_M1.dta). This file has been placed outside of the folder that is used to create the list of other datasets so that it is not included twice. 
+
+#dataset <- data.frame()
+
+#dataset <- read.dta("/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Data/Project Proposal/BGR_2013_BLISS_v01_M_M1.dta") 
+
+
+#dataset$m1_q1 <- iconv(dataset$m1_q1,from="CP1251",to="UTF-8") #Read names as Bulgarian Cyrillic
+
+#Create a list of the files from the target directory.
+
+#file_list <- list.files(path="/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Data/Project Proposal/BGR_2013_BLISS_v01_M_Stata8")
+
+#colnames(dataset) <- toupper(names(dataset))    #Makes all columns names upper-case
+#if ("ID_HOUSEHOLD" %in% colnames(dataset)){     #Deals with cases where HH_ID is named ID_household
+#  dataset <- rename(dataset, "HH_ID" = "ID_HOUSEHOLD")
+#}
+#if ("HHM_ID" %in% colnames(dataset)){           #Makes data type of HHM_ID the same
+#  dataset$HHM_ID <- as.character(dataset$HHM_ID)
+#}
+#if ("HH_ID" %in% colnames(dataset)){            #Makes data type of HH_ID the same
+#  dataset$HH_ID <- as.character(dataset$HH_ID)
+#}
+
+#for (i in 1:length(file_list)) {
+#  setwd("/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Data/Project Proposal/BGR_2013_BLISS_v01_M_Stata8")
+#  temp_data <- read.dta(file_list[i])               #Each data file is read
+#  colnames(temp_data) <- toupper(names(temp_data))  #Makes all columns names upper-case
+#  if ("ID_HOUSEHOLD" %in% colnames(temp_data)){     #Deals with cases where HH_ID is named ID_household
+ #   temp_data <- rename(temp_data, "HH_ID" = "ID_HOUSEHOLD")
+#  }
+#  if ("HHM_ID" %in% colnames(temp_data)){           #Makes data types the same
+ #   temp_data$HHM_ID <- as.character(temp_data$HHM_ID)
+#  }
+#  if ("HH_ID" %in% colnames(temp_data)){            #Makes data types the same
+ #   temp_data$HH_ID <- as.character(temp_data$HH_ID)
+#  }
+#    if(length(unique(temp_data$HHM_ID))>1){
+#    dataset <- left_join(dataset, temp_data, by = c("HH_ID","HHM_ID"))
+#    } else {
+#    temp_data$HHM_ID <- NULL
+#    dataset <- left_join(dataset, temp_data, by = c("HH_ID"))
+#    }
+#}
+
+#Add Psych Data
+#psych_data <- read.dta("/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Data/Project Proposal/BGR_2013_BLISS_v01_M_Stata8/BGR_2013_BLISS_v03_M_Psyh.dta")
+#colnames(psych_data)[c(4,5)]<-c("HH_ID","HHM_ID")
+#psych_data$HHM_ID <- as.character(psych_data$HHM_ID)
+#psych_data$HH_ID <- as.character(psych_data$HH_ID)
+#dataset <- left_join(dataset, psych_data, by = c("HH_ID","HHM_ID"))
+
+#Add wt_bliss_cs_cs_ind
+#wt_bliss_cs_cs_ind <- read.dta("/Users/jmaasch/Downloads/wt_bliss_cs_cs_ind.dta")
+#colnames(wt_bliss_cs_cs_ind)[c(1, 9)]<-c("HH_ID","HHM_ID")
+#wt_bliss_cs_cs_ind[c(2:8,10:11,13)]<-NULL
+#colnames(wt_bliss_cs_cs_ind)[c(3,4)]<-c("wt_bliss_cs_cs_ind","wt_adj_bliss_cs_cs_ind")
+#wt_bliss_cs_cs_ind$HHM_ID <- as.character(wt_bliss_cs_cs_ind$HHM_ID)
+#wt_bliss_cs_cs_ind$HH_ID <- as.character(wt_bliss_cs_cs_ind$HH_ID)
+#dataset <- left_join(dataset, wt_bliss_cs_cs_ind, by = c("HH_ID","HHM_ID"))
+
+#saveRDS(dataset, "dataset.rds")
+#getwd()
+```
+
+
+
+```{r message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+###### ------------------------ LOOK BELOW!------------------------------- ########
+
+#Read Data
+dataset <- readRDS("/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Roma Paper/Capstone - rds and r script/dataset.rds")
+
+dim(dataset)
+kable(dataset[1:5,1:5])
+
+#NOTE: There are 7468 rows in the final data, when there should be 7467 rows. However, when creating the set of depedent and independent variables, the dataframe used in this analysis has the proper number of rows.
+
+#The data above can be accessed directly here: https://github.com/AsherDvirDjerassi/BLISS---ROMA/blob/master/Data%20and%20Script/dataset-2.rds
+```
+
+
+```{r message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+## Potential Dependent Variables
+
+#There are two dependent variables used in this project: net monthly average wages and net monthly household income
+
+## Income components
+
+# Taxable employment income + Income from capital, e.g. dividends and interests  + Income received by children + Income from occupational and private pensions + Private transfers received + Income from property + Taxable self-employment income + Non-reported employment income + Non-reported self-employment income - Maintenance payments
+
+#Benefits simulated by EUROMOD: Child benefit for education  (целева помощ за ученици) + Guaranteed minimum income (помощ за социално подпомагане : гарантиран минимален доход) + Means-tested child benefit (месечна помощ за отглеждане на дете) + Contributory maternity benefit for pregnancy and childbirth (Обезщетение за бременност и майчинство) + Non-contributory benefit for raising a child under the age of 1 (месечна помощ за отглеждане на дете до 1 г. възраст) + Heating benefit (целева помощ за отопление) + Unemployment benefit (обезщетениe за безработица) + Contributory maternity benefit for bringing up child up to age 2 (Обезщетение за отглеждане на дете до 2г.) + Non-means tested child benefit for mothers in tertiary education (from 2009 on) + Non-means tested child benefit for twins (from 2009 on) + Birth grant (also for adoption) (еднократна помощ при раждане)				
+#Benefits derived from EU-SILC: Sickness benefits + Lump sum pregnancy grant + Other non-means-tested family benefits + Other unemployment benefits + Educational benefit (scholarships etc.) + Other (complementary) non-means-tested social assistance benefits + Old-age pension + Survivor pensions + Disability pensions + Housing benefits + Other means-tested social assistance + Other means-tested family benefits
+
+#-------------------------------------
+
+# Module 2A: Labor, for Everyone in Household 15 Years and Over 
+# Module 2B: For Members who Reported Working in Past 4 Weeks
+
+dataset$M2_Q3[1:100] # Have you worked in the past 4 weeks? 
+dataset$M2_Q10A[1:100] #m2_q10 What is the total net amount that [NAME] has earned in the past 12 months
+dataset$M2_Q16A[1:100] #m2_q16a What are [NAME'S] MONTHLY AVERAGE NET wages (net of taxes and contributions). 
+dataset$M2_Q17A[1:100] #m2_q17a What are [NAME'S] MONTHLY AVERAGE NET earnings from this work or busines (current work) 
+
+#-------------------------------------
+
+#Module 5A: Social Assistance
+
+dataset$M5A_Q2_11[1:100]#What was/is the monthly value of this allowance for all household members? Monthly child benefits (for children under 18 years, or 20 if in school)
+dataset$M5A_Q3_11[1:100]#What was/is the monthly value of this allowance for all household members? Infant benefits (for children under 1 year or 2 years if disabled)
+dataset$M5A_Q4_11[1:100]#What was/is the monthly value of this allowance for all household members? Monthly social assistance for low income households
+dataset$M5A_Q5_11[1:100] #What was/is the monthly value of this allowance for all household members? Heating allowance
+
+#-------------------------------------
+
+#Module 5B: Unemployment Benefits
+
+dataset$M5B_Q6[1:100]#What is the monthly value of the unemployement benefits?
+
+#-------------------------------------
+
+#The dataset contains information from Module 5C: Other Social Protection
+
+dataset$M5C_Q2E[1:100]#What pensions, aid or benefits did [NAME] receive in the past 12 months? What is the monthly value of this benefit [NAME] received?
+dataset$M5C_Q3E[1:100] #What pensions, aid or benefits did [NAME] receive in the past 12 months? What is the monthly value of this benefit [NAME] received?
+
+#------------------------------------
+
+#Module 10: Subjective
+dataset$M10_Q19[1:100]#What is the total net monthly income of your household at the moment (Total sum of the household members income from salaries/wages, pensions, social and family assistance, regular transfers from persons outside the household and from other sources)?
+#-------------------------------------
+
+```
+
+
+```{r message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+####Clean and Transform Independent Variables
+#----------------------------------------------
+#Combined the data above into dependent variables
+#Convert dep_vars from matrix to dataframe
+dep_vars <- as_data_frame(cbind(dataset$HH_ID, 
+                                dataset$HHM_ID, 
+                                dataset$M1_Q22, 
+                                dataset$SAMPLE_TYPE.x,
+                                dataset$M2_Q3, 
+                                dataset$M2_Q16A, 
+                                dataset$M5A_Q2_11, 
+                                dataset$M5A_Q3_11,
+                                dataset$M5A_Q4_11, 
+                                dataset$M5A_Q5_11, 
+                                dataset$M5B_Q6, 
+                                dataset$M5C_Q2E, 
+                                dataset$M5C_Q3E, 
+                                dataset$M10_Q19, 
+                                dataset$WTA_ADJ_HH, 
+                                dataset$wt_adj_bliss_cs_cs_ind, 
+                                dataset$wt_bliss_cs_cs_ind
+                                ))
+
+#Rename columns of dependent variables dataset
+names(dep_vars) <- c("HH_id",
+                     "HHM_id",
+                     "Ethnicity",
+                     "Booster or Main Sample",
+                     "worked in the past 4 weeks",
+                     "monthly average net wages",
+                     "monthly value of child benefits",
+                     "monthly value of infant benefits",
+                     "monthly value of social assistance",
+                     "monthly value of heating allowance",
+                     "monthly value of the unemployement benefits",
+                     "monthly value of pension, aid, or benefits, 1",
+                     "monthly value of pension, aid, or benefits, 2",
+                     "total net monthly household income", 
+                     "household weights", 
+                     "individual weights with population adjustment",
+                     "individual weights without population adjustment")
+#-------------------------------------
+
+
+dep_vars$`Booster or Main Sample` <- ifelse((dep_vars$`Booster or Main Sample`)==1, "Main sample", "Booster sample")
+
+# yes is coded as 1 and no is coded as 2 
+dep_vars$`worked in the past 4 weeks`<-ifelse((dep_vars$`worked in the past 4 weeks`)==1,1, 0)
+
+#-------------------------------------
+
+#If ethnicity is N/A, then set ethnicity equal to the value of another member of their household, HH_id. 
+
+setDT(dep_vars)[, ethnic := unique(Ethnicity[!is.na(Ethnicity)]), by = HH_id]
+
+#Display the household id and member id in addition to the old ethnicity column and the new ethnicity column. 
+df <- dep_vars %>% select(HH_id, HHM_id, Ethnicity, ethnic) 
+
+#Display the df for rows that contained NA for ethnicity.
+head(filter(df, Ethnicity %in% NA))
+
+rm(df)
+
+#Drop old Ethnicity
+dep_vars$Ethnicity <- NULL
+
+
+ #-------------------------------------
+
+#Converts all columns to numeric
+dep_vars[,3:14][is.na(dep_vars[,3:14])] <- 0 
+
+#Convert all relevant columns to numeric
+dep_vars$`monthly average net wages` <- as.numeric(dep_vars$`monthly average net wages`)
+
+dep_vars$`monthly value of child benefits` <- as.numeric(dep_vars$`monthly value of child benefits`)
+
+dep_vars$`monthly value of infant benefits` <- as.numeric(dep_vars$`monthly value of infant benefits`)
+
+dep_vars$`monthly value of social assistance` <- as.numeric(dep_vars$`monthly value of social assistance`)
+
+dep_vars$`monthly value of heating allowance` <- as.numeric(dep_vars$`monthly value of child benefits`)
+
+dep_vars$`monthly value of the unemployement benefits` <- as.numeric(dep_vars$`monthly value of the unemployement benefits`)
+
+dep_vars$`monthly value of pension, aid, or benefits, 1` <- as.numeric(dep_vars$`monthly value of pension, aid, or benefits, 1`)
+
+dep_vars$`monthly value of pension, aid, or benefits, 2`<- as.numeric(dep_vars$`monthly value of pension, aid, or benefits, 2`)
+
+dep_vars$`total net monthly household income`<- as.numeric(dep_vars$`total net monthly household income`)
+
+dep_vars$`household weights` <- as.numeric(dep_vars$`household weights`)
+
+```
+
+
+
+```{r Table 4.3 Market incomes number of recipients, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+#Make household weights numeric 
+dep_vars$`household weights` <- as.numeric(dep_vars$`household weights`)
+
+#Positive monthly average wages (i.e. employed)
+dep_vars$`Positive monthly average wages` <- ifelse((dep_vars$`monthly average net wages`)>0,1,0)
+dep_vars$`Positive monthly average wages` <- ifelse(is.na(dep_vars$`monthly average net wages`),0,1)
+sum(dep_vars$`Positive monthly average wages`)
+
+#Worked in the past 4 weeks (i.e. employed) - This is the same as the above metric
+dep_vars$`worked in the past 4 weeks` <- ifelse((dep_vars$`worked in the past 4 weeks`)==2,0,1)
+dep_vars$`worked in the past 4 weeks` <- ifelse(is.na(dep_vars$`worked in the past 4 weeks`),0,1)
+sum(dep_vars$`Positive monthly average wages`)
+
+dep_vars$`individual weights with population adjustment` <- as.numeric(dep_vars$`individual weights with population adjustment`)
+dep_vars$`individual weights without population adjustment` <- as.numeric(dep_vars$`individual weights without population adjustment`)
+
+```
+
+
+```{r message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+## Sample `household weights`
+#In the subsections below, I walk through the process of assigning sample `household weights` to the data. Additionally, I compare BLISS income data with household `household weights` applied to the data on Bulgarian households from the European Union Survey of Income and Living Conditions. 
+
+## Household sample `household weights` applied to the sample at the individual level
+
+
+# Discussion of `household weights` in BLISS survey documentation: 
+# The propensity score represents the probability that an individual with a particular combination of characteristics would be successfully interviewed, and is therefore a measure of the response rate at the micro level. By multiplying the basic weight by the inverse of this response rate, the weighted estimates reduce the bias due to some groups being under-represented in the sample due to nonresponse. The logistic response propensity scores were calculated separately for the data from the CMS2, CMS3 and BLISS panels of sampleindividuals for the Main Survey and the Booster Survey. Another attritionn analysis was run for the panel households interviewed in all waves of each survey
+
+
+#Combined booster and main sample HH `household weights` for analysis
+head(dep_vars$`household weights`)
+
+#Set N/A's equal to 0 in the household `household weights`
+dep_vars$`household weights`[is.na(dep_vars$`household weights`)] <- 0  
+
+dep_vars$`household weights` <- as.numeric(dep_vars$`household weights`)
+typeof(dep_vars$`household weights`)
+```
+
+
+
+```{r Create household df, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+## Create dataframes of household income by source
+#----------------------------------------------
+dataset$M5A_Q3_11_PERYEAR[is.na(dataset$M5A_Q3_11_PERYEAR)] <- 0 
+dataset$M5A_Q2_11_PERYEAR[is.na(dataset$M5A_Q2_11_PERYEAR)] <- 0 
+dataset$M5A_Q4_11_PERYEAR[is.na(dataset$M5A_Q4_11_PERYEAR)] <- 0 
+dataset$M5A_Q5_11[is.na(dataset$M5A_Q5_11)] <- 0 
+dataset$M5C_Q2_PERYEAR[is.na(dataset$M5C_Q2_PERYEAR)] <- 0 
+dataset$M5B_Q6_P[is.na(dataset$M5B_Q6_P)] <- 0 
+dataset$M2_Q16_PERYEAR[is.na(dataset$M2_Q16_PERYEAR)] <- 0 
+
+
+#1) household monthly value of infant benefits
+`infant benefits` <- aggregate(dataset$M5A_Q3_11_PERYEAR, by=list(dataset$HH_ID), FUN=sum)
+
+#2) household monthly value of child benefits
+`child benefits` <- aggregate(dataset$M5A_Q2_11_PERYEAR, by=list(dataset$HH_ID), FUN=mean)
+
+#3) household monthly value of social assistance
+`social assistance` <- aggregate(dataset$M5A_Q4_11_PERYEAR, by=list(dataset$HH_ID), FUN=mean)
+
+#4) household heating allowance
+`heating allowance` <- aggregate(dataset$M5A_Q5_11, by=list(dataset$HH_ID), FUN=mean)
+
+#5) Household total pensions
+hh_pension <- aggregate(dataset$M5C_Q2_PERYEAR, by=list(dataset$HH_ID), FUN=sum)
+
+#6) Unemployment insurance
+`unemployment insurance` <- aggregate(dataset$M5B_Q6_P, by=list(dataset$HH_ID), FUN=sum)
+
+#7) Household Income
+hh_income <- (aggregate(dep_vars$`total net monthly household income`, by=list(dep_vars$HH_id), FUN=mean))
+
+hh_income$x <- hh_income$x*12
+
+#8) Household average net wages
+hh_average_net_wages <-   aggregate(dataset$M2_Q16_PERYEAR, by=list(dataset$HH_ID), FUN=sum)
+
+#9) Household Ethnicity --- particularly in the event that there are multiple ethnic groups in household
+dep_vars$Roma <- ifelse( dep_vars$ethnic==3, 1, 0)
+hh_roma <- aggregate(dep_vars$Roma, by=list(dep_vars$HH_id), FUN=mean)
+unique(hh_roma[,2])
+hh_roma[,2] <- ifelse((hh_roma[,2])==0,0, 1)
+unique(hh_roma[,2])
+
+
+#Use cbind to form one dataframe for household data
+
+hh_data <- cbind.data.frame(`heating allowance`,
+                            hh_average_net_wages[,2],
+                            hh_income[,2],
+                            hh_pension[,2], 
+                            hh_roma[,2],
+                            `infant benefits`[,2],
+                            `child benefits`[,2],
+                            `social assistance`[,2],
+                            `unemployment insurance`[,2])
+
+colnames(hh_data) <- c("HH_id","heating allowance", "average net wages", "total net household income", "household pension income", "Roma household", "household infant benefits", "household child benefits", "household social assistance income", "unemployment insurance")
+
+
+dim(hh_data) #proper length (i.e. equal to the number of households) 
+head(hh_data)
+
+
+###----------
+#hh weight
+sum(is.na(dep_vars$`household weights`)) # no na values in household weights
+
+#Extract household `household weights` - one weight per household (2525 observations)
+HH_weight <- aggregate(dep_vars$`household weights`, by=list(dep_vars$HH_id), FUN=mean)
+
+colnames(HH_weight) <- c("HH_id","HH_weight")
+
+hh_data <- left_join(hh_data, HH_weight, by ="HH_id")
+
+#check whether there are na values
+unique(is.na(hh_data$HH_weight))
+
+#REMOVE TIHNGS NOT NEEDED 
+rm(`heating allowance`,
+   hh_average_net_wages,
+    hh_income,
+    hh_pension, 
+    hh_roma,
+    `infant benefits`,
+    `child benefits`,
+    `social assistance`,
+   `unemployment insurance`,
+    HH_weight)
+```
+
+
+
+```{r Create Roma/non-Roma catergory, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+## Create Roma/Bulgarian catergory
+#----------------------------------------------
+
+#Eliminate rows where ethnicity is not reported
+#dep_vars <- subset(dep_vars, !is.na(dep_vars$ethnic)); sum(is.na(dep_vars$ethnic))
+unique(dataset$m1_q22)
+  
+  
+#Unqiue ethnicity catergories
+unique(dep_vars$ethnic)
+count(dep_vars, c(ethnic))
+
+dep_vars$ethnic <- as.numeric(dep_vars$ethnic)
+dep_vars$ethnic_group <- ""
+
+dep_vars$ethnic_group[dep_vars$ethnic == 1] <- "Bulgarian"
+dep_vars$ethnic_group[dep_vars$ethnic == 2] <- "Roma"
+dep_vars$ethnic_group[dep_vars$ethnic == 3] <- "Turkish"
+dep_vars$ethnic_group[dep_vars$ethnic == 4] <- "Other"
+dep_vars$ethnic_group[dep_vars$ethnic == 5] <- "Other"
+dep_vars$ethnic_group[is.na(dep_vars$ethnic)] <- "Other"
+
+unique(dep_vars$ethnic_group)
+count(dep_vars, c(ethnic_group))
+
+# Sample type
+
+#dep_vars$`Booster or Main Sample`
+
+```
+
+
+
+
+```{r Deciles by Roma and Bulgaria, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+
+########### THIS NEEDS TO BE COMPLETELY CHANGED 
+############ THE ETHNIC THING IS TOTALLY OFF!!!!!!!!
+
+
+
+# #subset for only Roma
+# df_roma <- subset.data.frame(weighted_hh_data$variables, weighted_hh_data$variables$ethnic==1)
+# df[df==0] <- NA
+# household_income_by_decile_df_roma <- data.frame(aggregate(df_roma, by=list(df_roma$decile), FUN=mean, na.rm=TRUE))
+# 
+# #subset for only non-Roma
+# df_non_roma <- subset.data.frame(weighted_hh_data$variables, weighted_hh_data$variables$ethnic==0)
+# df[df==0] <- NA
+# household_income_by_decile_non_roma <- data.frame(aggregate(df_non_roma, by=list(df_non_roma$decile), FUN=mean, na.rm=TRUE))
+```
+
+
+
+```{r Potential Independent Variables, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+## INDEPENDENT VARIABLE AREA!!!!!!
+
+## Potential Independent Variables
+#---------------------------------------
+
+
+#Module 1A: Roster and Module 1B: Education 
+
+#---------------------------------------
+
+#Module 2A: Labor, for Everyone in Household 15 Years and Over and Module 2B: For Members who Reported Working in Past 4 Weeks
+
+unique(dataset$M2_Q7D) #What is the minimum monthly wage you would accept right now to start working?
+
+dataset$M2_Q7F <- ifelse(is.na(dataset$M2_Q7F),"no","yes")
+unique(dataset$M2_Q7F) #Would you be willing to move to a different settlement in Bulgaria for a job?
+
+dataset$M2_Q7E[is.na(dataset$M2_Q7E)] <- 0 
+dataset$M2_Q7E[1:100] #How far are you willing to commute for a job?
+               
+unique(dataset$M2_Q25A) #What is the main reason you/[NAME] doesn't work full-time?
+
+unique(dataset$M2_Q25B) #Would you/[NAME] work more hours if there were available and affordable child care services?
+dataset$M2_Q25B[is.na(dataset$M2_Q25B)] <- 'no'
+
+unique(dataset$M2_Q25C) #Would you/[NAME] work more hours if there were available and affordable care services for ill, disabled, or elderly people?
+dataset$M2_Q25C[is.na(dataset$M2_Q25C)] <- 'no'
+
+#---------------------------------------
+
+#Module 5A: Social Assistance
+
+unique(dataset$M5A_Q1) #Has this household any children under 20 years old?
+
+#--------------------------------------
+
+unique(dataset$M1_Q3) #Sex
+unique(dataset$M1_Q14A) #highest level of education
+unique(dataset$REGION.x.x) #Region identifier 
+
+#--------------------------------------
+
+#Psych Data 
+
+#Numeracy 
+sum(!is.na(dataset$IRT_Scores_Numeracy_skills))
+dataset$IRT_Scores_Numeracy_skills
+
+#Reading Comp
+dataset$IRT_Scores_Reading_Compr_skills
+sum(!is.na(dataset$IRT_Scores_Reading_Compr_skills))
+
+#Semantic Skills
+dataset$IRT_Scores_Semantics_skills
+sum(!is.na(dataset$IRT_Scores_Semantics_skills))
+
+#There are 1732 observations in the IRT Score variables above that are not N/A's
+#These observations were the respondents who were surveyed. 
+#The remaining observations will remain N/A
+#--------------------------------------
+
+#Create dataset of indp vars
+indep_vars <- dataset[c("HH_ID", "HHM_ID", "M2_Q25A", "M1_Q3", "M2_Q7F", "M2_Q7E", "M2_Q25B", "M2_Q25C", "M5A_Q1", "M1_Q14A", "AGE_GROUPS", "Region", "IRT_Scores_Numeracy_skills" , "IRT_Scores_Reading_Compr_skills", "IRT_Scores_Semantics_skills")]
+
+#Rename columns
+names(indep_vars) <- c("Household Id", "Household Member Id", "Main reason doesn't work full-time ", "Sex: ", "Willing to move within Bulgaria for a job? ", "Length willing to commute? ", "Would work more if child care? ", "Would work more if care services for disabled? ", "Household with children under 20? ", "Education ", "Age: ", "Region", "Numeracy", "Literacy", "Semantics")
+#--------------------------------------
+
+#Based on "Main reason doesn't work full-time", create variable "outside of labor market" which takes on the value 1 if attending school or has an illness or disability.
+unique(indep_vars$`Main reason doesn't work full-time`)
+
+indep_vars$y <- ifelse(indep_vars$`Main reason doesn't work full-time`=="ATTENDING SCHOOL OR TRAINING COURSES" , 1, 0)
+indep_vars$x <- ifelse(indep_vars$`Main reason doesn't work full-time`=="ILLNESS OR DISABILITY", 1, 0)
+
+unique(indep_vars$x)
+unique(indep_vars$y)
+
+is.na(indep_vars$x) <- 0 
+is.na(indep_vars$y) <- 0 
+
+indep_vars$`Disabled, Ill, or in School` <- indep_vars$x+indep_vars$y
+
+indep_vars$x <- NULL
+indep_vars$y <- NULL
+
+#--------------------------------------
+unique(indep_vars$Education)
+
+indep_vars$Education <- gsub("none", "none", indep_vars$Education)
+
+indep_vars$Education <- gsub("initial", "initial", indep_vars$Education)
+
+indep_vars$Education <- gsub("secondary", "secondary", indep_vars$Education)
+
+indep_vars$Education <- gsub("PROFESSIONAL BACHELOR", "bachelor's", indep_vars$Education)
+
+indep_vars$Education <- gsub("HIGHER, BACHELOR", "bachelor's", indep_vars$Education)
+
+indep_vars$Education <- gsub("HIGHER, MASTER", "master's", indep_vars$Education)
+
+indep_vars$Education <- gsub("HIGHER, PhD", "PhD", indep_vars$Education)
+unique(indep_vars$Education)
+
+indep_vars <- indep_vars %>% mutate(Education = factor(Education, levels = c("none", "initial", "primary", "secondary", "bachelor's", "master's", "PhD"))) 
+
+```
+
+
+```{r Create combined data-set, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+
+## Create combined data-set
+#--------------------------------------
+
+dim(dep_vars); dim(indep_vars)
+combined_data <- cbind(dep_vars, indep_vars)
+
+#--------------------------------------
+
+#Drop if age is less than 18 
+unique(combined_data$`Age: `)
+
+combined_data <- subset(combined_data, `Age: `!="Less than 18")
+
+#Drop observations where sex is equal to N/A
+combined_data <- combined_data[complete.cases(combined_data$`Sex: `),]
+
+#--------------------------------------
+
+#Fill in missing values of region by using the region of HH_id
+setDT(combined_data)[, Region := unique(Region[!is.na(Region)]), by = HH_id]; unique(combined_data$Region)
+
+#--------------------------------------
+
+#Add to ethnic group and booster to 
+hh_data <- left_join(hh_data, combined_data, by = "HH_id")
+
+#--------------------------------------
+#Weight the combined dataset. 
+combined_data_weighted <-svydesign(id=~1, weights=~combined_data$`household weights`, data=combined_data)
+```
+
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+total_benefits <- list()
+
+#1) household heating allowance
+total_benefits$`total monthly heating allowance` <- sum(hh_data$`heating allowance`*hh_data$HH_weight)
+
+#2) Household average net wages
+total_benefits$`total net wages` <- sum(hh_data$`average net wages`*hh_data$HH_weight)
+
+#3) Household Income
+total_benefits$`total household income` <- sum(hh_data$`total net household income`*hh_data$HH_weight)
+
+#4) Household total pensions
+total_benefits$`total pension` <- sum(hh_data$`household pension income` * hh_data$HH_weight)
+
+#5) household monthly value of infant benefits
+total_benefits$`total infant benefits` <- sum(hh_data$`household infant benefits`*hh_data$HH_weight)
+
+#6) household monthly value of child benefits
+total_benefits$`total child benefits` <- sum(hh_data$`household child benefits`*hh_data$HH_weight)
+
+#7) household monthly value of social assistance
+total_benefits$`total social assistance` <- sum(hh_data$`household social assistance income`*hh_data$HH_weight)
+
+#8) household monthly value of unemployment
+total_benefits$`unemployment insurance` <- sum(hh_data$`unemployment insurance`*hh_data$HH_weight)
+
+total_benefits <- as.data.frame(total_benefits)/1000000
+total_benefits <- round(total_benefits)
+
+colnames(total_benefits) <- c("total monthly heating allowance", "total net wages", "total net household income", "household pension income", "household infant benefits", "household child benefits", "household social assistance income", "unemployment insurance benefits")
+
+#EU-SILC and administrative data
+eu_silc = c(35, 25646, NA ,9469, 73, 236, 23, 363)
+external = c(75, 27765, NA ,7461, 142, 352, 54, 351)  
+
+#Monthly child benefits (for children under 18 years, or 20 if in school)	
+#Infant benefits (for children under 1 year, or 2 years if disabled)	
+  
+euromod <- t( data.frame(eu_silc, external))
+
+colnames(euromod) <- c("total monthly heating allowance", "total monthly average net wages", "total net monthly household income", "household pension income", "household infant benefits", "household child benefits", "household social assistance income", "unemployment insurance benefits")
+
+euromod <- as.data.frame(t(euromod))
+
+total_benefits <- as.data.frame(t(total_benefits))
+total_benefits <- cbind(total_benefits, euromod)
+
+colnames(total_benefits) <- c("BLISS", "EU-SILC", "Administrative Data")
+
+total_benefits$`Ratio BLISS/EU-SILC`<-round(total_benefits$BLISS/ total_benefits$`EU-SILC`, digits = 2)
+
+total_benefits$`Ratio BLISS/Administrative Data`<- round(total_benefits$BLISS/ total_benefits$`Administrative Data`, digits = 2)
+
+kable(total_benefits, "latex", booktabs = T, caption = "Aggregate Household Income by Source and Survey")  %>%
+  kable_styling(position = "center")  %>% 
+  kable_styling(latex_options = c("scale_down", "hold_position"))  %>% 
+  footnote(general = "For the administrative data and the EU-SILC, families are the unit of observation for infant and child benefits while social assistance and heating allowance recipiency is reported on the household level.", threeparttable = T) 
+```
+
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+total_recipients <- list()
+
+#1) household heating allowance
+total_recipients$`heating allowance` <- sum(ifelse(hh_data$`heating allowance`!= 0, 1, 0)*hh_data$HH_weight)
+  
+#2) individuals employed
+total_recipients$`individuals employed` <- NA
+
+#3) total pensions
+total_recipients$`pension` <- NA
+
+#4) household monthly value of infant benefits
+total_recipients$`infant benefits` <- sum(ifelse(hh_data$`household infant benefits`!= 0, 1, 0)*hh_data$HH_weight)
+
+#5) household monthly value of child benefits
+total_recipients$`total child benefits` <- sum(ifelse(hh_data$`household child benefits`!= 0, 1, 0)*hh_data$HH_weight)
+
+#6) household monthly value of social assistance
+total_recipients$`unemployment insurance` <- NA
+
+#7) household monthly value of social assistance
+total_recipients$`social assistance` <- sum(ifelse(hh_data$`household social assistance income`!= 0, 1, 0)*hh_data$HH_weight) 
+  
+total_recipients <- as.data.frame(total_recipients)/1000
+total_recipients <- round(total_recipients)
+
+colnames(total_recipients) <- c("households receiving heating allowances", "individuals employed", "households receiving pensions", "households receiving infant benefits", "households receiving child benefits", "individuals receiving unemployment insurance benefits", "households receiving social assistance income")
+
+
+eu_silc = c(35, 2930, 2967, 38, 344, 18, 201)
+external = c(75, 2935, 2670, 62, 537, 50, 117)  
+
+#Monthly child benefits (for children under 18 years, or 20 if in school)	
+#I assume this refers to means tested child benefit
+
+
+#Infant benefits (for children under 1 year, or 2 years if disabled)	
+  
+euromod_recipients <- t( data.frame(eu_silc, external))
+
+colnames(euromod_recipients) <- c("households receiving heating allowances", "individuals employed", "households receiving pensions", "households receiving infant benefits", "households receiving child benefits", "individuals receiving unemployment insurance benefits", "households receiving social assistance income")
+
+euromod_recipients <- as.data.frame(t(euromod_recipients))
+
+total_recipients <- as.data.frame(t(total_recipients))
+total_recipients <- cbind(total_recipients, euromod_recipients)
+
+colnames(total_recipients) <- c("BLISS", "EU-SILC", "Administrative Data")
+
+total_recipients$`Ratio BLISS/EU-SILC`<- round(total_recipients$BLISS/ total_recipients$`EU-SILC`, digits = 2)
+
+total_recipients$`Ratio BLISS/Administrative Data`<-round(total_recipients$BLISS/ total_recipients$`Administrative Data`, digits = 2)
+
+
+kable(total_recipients, "latex", booktabs = T, caption = "Total Recipients in Thousands by Source and Survey")  %>%
+  kable_styling(position = "left")  %>% 
+  kable_styling(latex_options = c("scale_down", "hold_position"))  %>% 
+  footnote(general = "For the BLISS data, total recipients are restricted to households because this table is only concerned with the BLISS weighted at the household level. Given that the BLISS was designed to be representative at the household level, receipt of income which is accounted for by the survey at the personal level is not reported. For the administrative data and the EU-SILC, families are the unit of observation for infant and child benefits while social assistance and heating allowance recipiency is reported on the household level.", threeparttable = T) 
+```
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+## Household sample `household weights` employed to display monthly total income, pension income, and government transfer income by total household income deciles. 
+##----------------------------------------------------------
+
+#Find weighted household total income deciles. 
+weighted_hh_data<-svydesign(id=~1, weights=~hh_data$HH_weight, data=hh_data)
+
+#Create deciles
+dt_quantile = svyquantile(~`total net household income`, design = weighted_hh_data, quantiles = seq(.1, 1, by=0.1), method = "linear", ties="rounded")
+
+#Change direction of the table (wide to long)
+dt_quantile = data.table(t(dt_quantile), keep.rownames = T)
+
+
+dt_quartile_unweighted <- quantile(hh_data$`total net household income`, prob = seq(0, 1, length = 11), type = 5)
+dt_quartile_unweighted <- as.data.frame(dt_quartile_unweighted)
+
+dt_quartile_unweighted <- quantile(hh_data$`total net household income`, prob = seq(0, 1, length = 11), type = 5)
+dt_quartile_unweighted <- as.data.frame(dt_quartile_unweighted)
+
+dt_quartile_unweighted_roma <- quantile(subset(hh_data$`total net household income`, hh_data$ethnic_group=="Roma"), prob = seq(0, 1, length = 11), type = 5)
+dt_quartile_unweighted_roma <- as.data.frame(dt_quartile_unweighted_roma)
+
+dt_quartile_unweighted_bg <- quantile(subset(hh_data$`total net household income`, hh_data$ethnic_group=="Bulgarian"), prob = seq(0, 1, length = 11), type = 5)
+dt_quartile_unweighted_bg <- as.data.frame(dt_quartile_unweighted_bg)
+
+## Compare weighted household survey data with European Union Statistics on Income and Living Conditions (EU-SILC). 
+#-----------------------------------------------------------
+
+#Import data from the 2013 EU-SILC and EUROMOD on the household income by total income decile.
+#Data can be found here: https://www.euromod.ac.uk/sites/default/files/statistics/WebStatistics_G3.0%2B_HHIncome_v2.xls
+
+p = c(1,2,3,4,5,6,7,8,9,10)
+n = c(360.6, 470.0, 646.9, 825.6, 1023.3, 1220.7, 1407.2, 1619.0, 2043.3, 3411.1)
+EU_SILC = data.frame(p,n)
+
+deciles <- cbind(EU_SILC, dt_quantile[,2], dt_quartile_unweighted[2:11,1], dt_quartile_unweighted_roma[2:11,1],  dt_quartile_unweighted_bg[2:11,1])
+colnames(deciles) <- c("Decile","EU-SILC", "Weighted BLISS", "Unweighted BLISS", "Unweighted BLISS Roma", "Unweighted BLISS Bulgarians")
+
+rm(EU_SILC, dt_quantile, dt_quartile_unweighted, dt_quartile_unweighted_roma, dt_quartile_unweighted_bg)
+
+#-------------------------------------
+#The table below compares the weighted BLISS survey data and data from one of the most widely respected representative surveys, the European Union Statistics on Income and Living Conditions (EU-SILC). Differences in the government benefits between the two data likely are due to the Euromod that is being relied upon to impute government benefit information. Otherwise, though, the BLISS data seems to very much underestimate household income data. The likely reason for this is that far fewer households were sampled than in the EU-SILC per geographic region. In turn, the survey may 
+
+
+### Table
+#-------------------------------------
+#Combined the two tables, the weighted data from the BLISS Survey and the data from the EU-SILC/Euromod, and compare. 
+kable(round(deciles), "latex", booktabs = T, caption = "Total household income deciles by survey")  %>%
+  kable_styling(position = "left")  %>% 
+  kable_styling(latex_options = c("scale_down", "hold_position")) %>% 
+  footnote(general = "All amounts above are reported as 2013 Bulgarian leva. The EU-SILC data was reported in 2013 Euros and was appropriately converted. The BLISS data reports total household net income. The EU-SILC data reports on total monthly average disposable household income. Source: https://www.euromod.ac.uk/sites/default/files/statistics/WebStatistics_G3.0%2B_HHIncome_v2.xls ", threeparttable = T) 
+
+```
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+dt_quartile_1 <- quantile(subset(hh_data$`total net household income`, hh_data$`Booster or Main Sample`== "Booster sample" & hh_data$ethnic_group == "Roma"), prob = seq(0, 1, length = 6), type = 5)
+dt_quartile_1 <- as.data.frame(dt_quartile_1)
+
+dt_quartile_2 <- quantile(subset(hh_data$`total net household income`, hh_data$`Booster or Main Sample`== "Main sample" & hh_data$ethnic_group == "Roma"), prob = seq(0, 1, length = 6), type = 5)
+dt_quartile_2 <- as.data.frame(dt_quartile_2)
+
+dt_quartile_3 <- quantile(subset(hh_data$`total net household income`, hh_data$ethnic_group == "Roma"), prob = seq(0, 1, length = 6), type = 5)
+dt_quartile_3 <- as.data.frame(dt_quartile_3)
+
+dt_quartile_4 <- quantile(subset(hh_data$`total net household income`, hh_data$`Booster or Main Sample`== "Booster sample" & hh_data$ethnic_group == "Turkish"), prob = seq(0, 1, length = 6), type = 5)
+dt_quartile_4 <- as.data.frame(dt_quartile_4)
+
+dt_quartile_5 <- quantile(subset(hh_data$`total net household income`, hh_data$`Booster or Main Sample`== "Main sample" & hh_data$ethnic_group == "Turkish"), prob = seq(0, 1, length = 6), type = 5)
+dt_quartile_5 <- as.data.frame(dt_quartile_5)
+
+dt_quartile_6 <- quantile(subset(hh_data$`total net household income`, hh_data$ethnic_group == "Turkish"), prob = seq(0, 1, length = 6), type = 5)
+dt_quartile_6 <- as.data.frame(dt_quartile_6)
+
+dt_quartile_7 <- quantile(subset(hh_data$`total net household income`, hh_data$ethnic_group == "Bulgarian"), prob = seq(0, 1, length = 6), type = 5)
+dt_quartile_7 <- as.data.frame(dt_quartile_7)
+
+quartiles <- cbind(dt_quartile_7, dt_quartile_6, dt_quartile_5, dt_quartile_4, dt_quartile_3, dt_quartile_2, dt_quartile_1)
+colnames(quartiles) <- c("Bulgarian", "Turkish", "Turkish Main Sample", "Turkish Booster Sample", "Roma", "Roma Main Sample", "Roma Booster Sample")
+
+
+kable(round(quartiles[2:6,]), "latex", booktabs = T, caption = "Household income distribution by survey")  %>%
+  kable_styling(position = "left")  %>% 
+  kable_styling(latex_options = c("scale_down", "hold_position")) %>% 
+  footnote(general = "All amounts above are reported as 2013 Bulgarian leva. The EU-SILC data was reported in 2013 Euros and was appropriately converted. The BLISS data reports total household net income. The EU-SILC data reports on total monthly average disposable household income. Source: https://www.euromod.ac.uk/sites/default/files/statistics/WebStatistics_G3.0%2B_HHIncome_v2.xls ", threeparttable = T) 
+
+```
+
+
+
+\newpage 
+
+# Blinder-Oaxaca Decomposition
+
+Through a Blinder-Oaxaca decomposition, the relative impact of education, region, family size, and other characteristics on income disparities between Roma and non-Roma can be ascertained. Corollary, a Blinder-Oaxaca decomposition can provide strong evidence for the extent to which economic inequality between Roma and non-Roma is due to structural and employment discrimination. 
+
+In the immediate subsections below, the explicit form of the Blinder-Oaxaca decomposition is presented. For sake of simplicity, the explicit form is presented for only one of the potential dependent variables: mean net monthly wage income. 
+
+## Explicit Form of the Blinder-Oaxaca Decomposition
+
+Below is the explicit form of the Blinder-Oaxaca decomposition for log-wages estimates for Roma and non-Roma. 
+
+$$
+{\displaystyle {\begin{aligned}(1)\qquad \ln({\text{wages}}_{Roma_{i}})&=x_{Roma_{i}}^T \gamma+\epsilon_{Roma_{i}} \\(2)\qquad \ln({\text{wages}}_{non-Roma_{i}})&=x_{non-Roma_{i}}^T \gamma+\epsilon_{non-Roma_{i}}\end{aligned}}}
+$$
+
+## Difference in Mean Log-Wages between Non-Roma and Roma
+
+Fitted values from the two log-linear models are subtracted from one another as follows. 
+
+$$
+{\displaystyle {\begin{aligned}(3)\qquad &\operatorname {mean} (\ln({\text{wages}}_{non-Roma}))-\operatorname {mean} (\ln({\text{wages}}_{Roma}))\\[4pt]={}&b_{non-Roma}\operatorname {mean} (X_{non-Roma})-b_{Roma}\operatorname {mean} (X_{Roma}) \end{aligned}}}
+$$
+
+## Decomposing Explained and Unexplained Differences
+
+The differences between Roma and non-Roma in terms of wage income are decomposed into a) between-group differences explained by observables and b) differences not explained by observables. 
+
+$$
+{\displaystyle {\begin{aligned}
+[4pt]={}&b_{non-Roma}(\operatorname {mean} (X_{non-Roma})-\operatorname {mean} (X_{Roma}))+\operatorname {mean} (X_{Roma})(b_{non-Roma}-b_{Roma})
+\end{aligned}}}
+$$
+
+a) Between-group differences: These are differences in observable and relevant characteristics, like one's level of education, age, and the region in which they live.
+
+$$
+b_{non-Roma}(\operatorname {mean} (X_{non-Roma})-\operatorname {mean} (X_{Roma}))
+$$
+
+b) Differences not explained by observables: The differences in outcomes that cannot be accounted for by observables are estimated here. Typically in the literature, this portion of the Blinder-Oaxaca decomposition is considered to estimate the role of discrimination.
+
+$$
+\operatorname {mean} (X_{Roma})(b_{non-Roma}-b_{Roma})
+$$
+
+\newpage
+
+\newpage
+
+
+# Segregated and non-segregated communities: Is there evidence of systematic differences in segregated and non-segregated communities?
+
+
+```{r fig.cap = "Monthly average net wages by education level for those with positive earnings", fig.width=9, fig.height=10, message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+#Monthly wages by highest level of education for those reporting wages greater than 0
+plot1 <- ggplot(subset(combined_data, ethnic_group=="Roma"), aes(x =Education, y=`monthly average net wages`)) + labs(title = "Roma") + ylim(1, 2300) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+plot2 <- ggplot(subset(combined_data, ethnic_group=="Bulgarian"), aes(x =Education, y=`monthly average net wages`)) + labs(title = "Bulgarian") + geom_boxplot() + ylim(1, 2300) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+plot3 <- ggplot(subset(combined_data, ethnic_group=="Turkish"), aes(x =Education, y=`monthly average net wages`)) + labs(title = "Turkish") + ylim(1, 2300) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+grid.arrange(
+  plot1,
+  plot2,
+  plot3,
+  nrow = 3,
+  bottom = textGrob(
+    "2013 Bulgarian Leva. Unweighted sample. Observations restricted to those with positive incomes. Wage income includes all earned income.",
+    gp = gpar(fontface = 3, fontsize = 7),
+    hjust = 1,
+    x = 1
+  )
+)
+```
+
+
+```{r fig.cap = "Monthly average net wages by ethnicity and sample type",fig.width=7, fig.height=4, message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+#Monthly wages by highest level of education for those reporting wages greater than 0
+plot1 <- ggplot(subset(combined_data, ethnic_group=="Roma"), aes(x =`Booster or Main Sample`, y=`monthly average net wages`)) + labs(title = "Roma") + ylim(1, 2300) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+plot2 <- ggplot(subset(combined_data, ethnic_group=="Turkish"), aes(x =`Booster or Main Sample`, y=`monthly average net wages`)) + labs(title = "Turkish") + ylim(1, 2300) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+plot3 <- ggplot(subset(combined_data, ethnic_group=="Other"), aes(x =`Booster or Main Sample`, y=`monthly average net wages`)) + labs(title = "Other") + ylim(1, 2300) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+grid.arrange(
+  plot1,
+  plot2,
+  plot3,
+  nrow = 1,
+  bottom = textGrob(
+    "2013 Bulgarian Leva. Unweighted sample. Observations restricted to those with positive incomes. Wage income includes all earned income.",
+    gp = gpar(fontface = 3, fontsize = 7),
+    hjust = 1,
+    x = 1
+  )
+)
+```
+
+
+```{r fig.cap = "Monthly net household income by ethnicity and sample type",fig.width=7, fig.height=4, message=FALSE, warning=FALSE, echo = FALSE, asis}
+
+plot1 <- ggplot(subset(hh_data, ethnic_group=="Roma"), aes(x =`Booster or Main Sample`, y=`total net monthly household income`)) + labs(title = "Roma") + ylim(1, 2700) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+plot2 <- ggplot(subset(combined_data, ethnic_group=="Turkish"), aes(x =`Booster or Main Sample`, y=`total net monthly household income`)) + labs(title = "Turkish") + ylim(1, 2700) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+plot3 <- ggplot(subset(combined_data, ethnic_group=="Other"), aes(x =`Booster or Main Sample`, y=`total net monthly household income`)) + labs(title = "Other") + ylim(1, 2700) + theme(axis.text.x = element_text(angle = 60, hjust = 1))  + geom_boxplot(aes(weight=(`household weights`/sum(`household weights`)))) + theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+
+grid.arrange(
+  plot1,
+  plot2,
+  plot3,
+  nrow = 1,
+  bottom = textGrob(
+    "2013 Bulgarian Leva. Weighted sample. Observations restricted to those with positive incomes. Wage income includes all earned income.",
+    gp = gpar(fontface = 3, fontsize = 7),
+    hjust = 1,
+    x = 1
+  )
+)
+```
+
+\newpage
+# Distribution of incomes for weighted and unweighted samples
+
+```{r fig.cap = "Distribution of monthly average net wages for households with positive incomes -- weighted and unweighted sample",message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+
+ethnic_group_weights <- hh_data %>%
+  group_by(ethnic_group)  %>%
+  summarise(ethnic_group_weights = sum(`household weights`))
+
+hh_data <- hh_data %>%
+  left_join(ethnic_group_weights, by = "ethnic_group")
+
+plot1 <- ggplot(subset(hh_data, (!is.na(hh_data$ethnic_group))), aes(x=`ethnic_group`, y=`monthly average net wages`)) + labs(title = "Without household sample weights", x = "Ethnic groups" ) + ylim(1, 3000) +geom_violin(alpha=0.5, color="gray") + geom_jitter(alpha=0.5, aes(ethnic_group), position = position_jitter(width = 0.1))+coord_flip()
+  
+plot2 <- ggplot(subset(hh_data,(!is.na(hh_data$ethnic_group))), mapping = aes(x=ethnic_group, y=`monthly average net wages`, weights = `household weights`/sum(`household weights`))) + labs(title = "With household sample weights", x = "Ethnic groups") + ylim(1, 3000) + geom_violin(alpha=0.5, color="gray") + geom_jitter(alpha=0.5, aes(ethnic_group), position = position_jitter(width = 0.1)) + coord_flip()
+
+
+grid.arrange(
+  plot1,
+  plot2,
+  nrow = 2,
+  bottom = textGrob(
+    "2013 Bulgarian Leva. Observations restricted to those with positive incomes. Wage income includes all earned income.",
+    gp = gpar(fontface = 3, fontsize = 7),
+    hjust = 1,
+    x = 1
+  )
+)
+```
+
+```{r fig.cap = "Distribution of monthly total net household income for households with positive incomes -- weighted and unweighted sample",message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+plot1 <- ggplot(subset(hh_data, (!is.na(hh_data$ethnic_group))), aes(x=`ethnic_group`, y=`total net monthly household income`)) + labs(title = "Without household sample weights", x = "Ethnic groups" ) + ylim(1, 3000) +geom_violin(alpha=0.5, color="gray") + geom_jitter(alpha=0.5, aes(ethnic_group), position = position_jitter(width = 0.1))+coord_flip()
+  
+plot2 <- ggplot(subset(hh_data,(!is.na(hh_data$ethnic_group))), mapping = aes(x=ethnic_group, y=`total net monthly household income`, weights = `household weights`/sum(`household weights`))) + labs(title = "With household sample weights", x = "Ethnic groups") + ylim(1, 3000) + geom_violin(alpha=0.5, color="gray") + geom_jitter(alpha=0.5, aes(ethnic_group), position = position_jitter(width = 0.1)) + coord_flip()
+
+
+grid.arrange(
+  plot1,
+  plot2,
+  nrow = 2,
+  bottom = textGrob(
+    "2013 Bulgarian Leva. Observations restricted to those with positive incomes.",
+    gp = gpar(fontface = 3, fontsize = 7),
+    hjust = 1,
+    x = 1
+  )
+)
+```
+
+
+```{r fig.cap = "Distribution of monthly total net household income from government benefits households with positive government benefit incomes -- weighted and unweighted sample",message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+hh_data$`transfer income` <- hh_data$`monthly value of social assistance`+hh_data$`monthly value of heating allowance`+hh_data$`monthly value of child benefits`+hh_data$`monthly value of infant benefits`
+
+plot1 <- ggplot(subset(hh_data, (!is.na(hh_data$ethnic_group))), aes(x=`ethnic_group`, y=`transfer income` )) + labs(title = "Without household sample weights", x = "Ethnic groups" ) + ylim(1, 1000) +geom_violin(alpha=0.5, color="gray") +coord_flip()
+  
+plot2 <- ggplot(subset(hh_data,(!is.na(hh_data$ethnic_group))), mapping = aes(x=ethnic_group, y=`transfer income` , weights = `household weights`/sum(`household weights`))) + labs(title = "With household sample weights", x = "Ethnic groups") + ylim(1, 1000) + geom_violin(alpha=0.5, color="gray")  + coord_flip()
+
+grid.arrange(
+  plot1,
+  plot2,
+  nrow = 2,
+  bottom = textGrob(
+    "2013 Bulgarian Leva. Observations restricted to those with positive incomes.",
+    gp = gpar(fontface = 3, fontsize = 7),
+    hjust = 1,
+    x = 1
+  )
+)
+```
+
+
+
+```{r fig.cap = "w and un",message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+#CONSIDER OTHER WAYS OF USING WEIGHTS LATER
+
+#plot1 <- ggplot(subset(hh_data,(!is.na(hh_data$ethnic_group))), mapping = aes(x=ethnic_group, y=`total net monthly household income`, weights = `household weights`, bw = ethnic_group_weights)) + labs(title = "With household sample weights", x = "Ethnic groups") + ylim(1, 3000) + geom_violin(alpha=0.5, color="gray") + geom_jitter(alpha=0.5, aes(ethnic_group), position = position_jitter(width = 0.1)) + coord_flip()
+
+#plot2 <- ggplot(combined_data, mapping = aes(x=ethnic_group, y=`monthly average net wages`, weights = `household weights`, bw = ethnic_group_weights)) + labs(title = "With household sample weights", x = "Ethnic groups") + ylim(1, 3000) + geom_violin(alpha=0.5, color="gray") + geom_jitter(alpha=0.5, aes(ethnic_group), position = position_jitter(width = 0.1)) + coord_flip()
+```
+
+\newpage
+#Education and standarized test results
+
+```{r fig.cap = "Mean numeracy score by education level",message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+  
+ggplot(aes(x = Education, y = Numeracy), data = combined_data) + stat_summary(fun.y = "mean", geom = "bar") + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme_hc()+ scale_colour_hc()
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, results = "asis"}
+
+stargazer(lm(Numeracy ~ Education, combined_data), lm(Literacy ~ Education, combined_data), title="OLS estimates: Educational attainment on standarized test score", covariate.labels=c("initial", "primary", "secondary", "bachelor's", "master's", "PhD", "Constant"), header=FALSE)
+```
+
+\newpage
+#References

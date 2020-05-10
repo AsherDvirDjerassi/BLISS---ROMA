@@ -1,0 +1,163 @@
+---
+title: "Sources of Ethnic Inequality in Bulgaria: Evidence of Roma Discrimination"
+author: "Asher Dvir-Djerassi"
+date: ""
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    number_sections: yes
+  bookdown::pdf_book:
+    toc: no
+bibliography: bibliography.bib
+geometry: margin = 1.5in
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{lipsum}
+- \usepackage{dcolumn}
+- \usepackage{rotating, graphicx}
+- \usepackage{float}
+- \usepackage{setspace}
+- \onehalfspacing
+nocite: '@*'
+fontsize: 11pt
+subtitle: "Introduction"
+abstract: "Bulgarian Roma, who constitute roughly 10 percent of Bulgaria's population, unambiguously face some of the most egregious material poverty and discrimination in contemporary Europe. Corollary, income inequality between Roma and non-Roma in contemporary Bulgaria is dramatic. Mean and median monthly net wages of Roma are roughly 60 percent that of non-Roma earnings. In terms of total net monthly household income, Roma households saw average and median incomes half the size of non-Roma households. The aim of this paper is to decompose the factors leading to this inequality. Namely, the analysis undertaken here seeks to decompose the extent to which differences in endowments -- e.g. differences in educational attainment, regional differences, household composition, and demographics -- explain inequalities between Roma and non-Roma versus the role of factors specific to Roma -- e.g. employer discrimination, structural discrimination, and any other characteristics specific to this ethnic group. By applying the World Bank's 2013 Bulgarian Longitudinal Inclusive Society Survey to a log-linear model, there is clear evidence that belonging to the Roma ethnicity depreciates labor market earnings as well as total household income when controlling for other relevant labor market characteristics. Furthermore, via a Blinder-Oaxaca Decomposition, the contribution of different factors to the gap in economic outcomes between Bulgarian Roma and non-Roma are estimated. The estimates produced by both the Blinder-Oaxaca Decomposition and the log-linear model provide clear evidence that factors like structural and employment discrimination are driving economic inequality between Bulgarian Roma and non-Roma, rather than factors like educational or demographic differences."
+
+
+---
+\inputencoding{latin2}
+
+
+\newpage
+\tableofcontents
+
+```{r warning=FALSE, message=FALSE, include=FALSE}
+### -------- Packages ---------- ###
+#NOTE: additional packages are also uploaded below when needed. 
+
+#install.packages("tinytex")
+#tinytex::install_tinytex(force = TRUE)
+
+#install.packages("bookdown")
+library("bookdown")
+#install.packages("survey")
+library("survey")
+#install.packages("RSQLite")
+library("RSQLite") 
+#install.packages("tidyverse")
+library("tidyverse")
+#install.packages("RefManageR")
+library("RefManageR")
+#install.packages("foreign")
+library("foreign")
+suppressPackageStartupMessages(library("dplyr"))
+library("knitr")
+#install.packages("ggplot2")
+library("ggplot2")
+#install.packages("Hmisc")
+library("Hmisc")
+library("lattice") 
+library("gridExtra") 
+library("scales")
+#options(kableExtra.latex.load_packages = TRUE)
+#install.packages("kableExtra")
+library("kableExtra")
+#install.packages("https://CRAN.R-project.org/package=sjPlot")
+require("sjPlot")
+#install.packages("stargazer")
+library("stargazer")
+#install.packages("xtable")
+library("xtable") 
+#install.packages("texreg")
+library("texreg")
+#install.packages("magrittr")
+library("magrittr")
+#install.packages("survey")
+library("survey")
+#install.packages("tableone")
+library("tableone")
+#install.packages("data.table")
+library("data.table")
+#install.packages("oaxaca")
+library("oaxaca")
+#install.packages("olsrr")
+library("olsrr")
+#install.packages("lmtest")
+library("lmtest")
+#install.packages("sandwich")
+library("sandwich")
+#install.packages("tableone")
+library("tableone")
+#install.packages("texreg")
+library("texreg")
+
+
+### ------ Set Working Directory ###
+
+#setwd("/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Data/Project Proposal")
+
+### -------- Create .bib file from Zotero  ---------- ###
+
+#Link Zotero account to create bibliography in 
+user_id = 2693449 #Zotero userID
+
+collection_id = "7HMW3TNA" #Collection Key - The collection id is just the last character set after collectionKey/ at the end of the collection’s URL. https://www.zotero.org/napoleon_asher/items/collectionKey/7HMW3TNA
+
+private_key = "UW0LHvayXhxsAYr3jpIjtA1N" # private key of zetero account can be created through the following steps: Zotero account, Home --> Settings--> Feeds/API --> then "click on "Create new private key"
+
+biblio <- ReadZotero(user = user_id, .params = list(collection = collection_id, key = private_key )) #Creates an object called biblio which reads the reference material from the Zotero collection for which the reference IDs above link to. 
+
+WriteBib(biblio, file = "bibliography.bib", biblatex = TRUE, append = FALSE, verbose = TRUE) #Creates a .bib document in the the working directory. Name the .bib file what the bibliography is called in the intro section (i.e. bibliography: bibliography.bib)
+
+```
+
+\newpage
+# Introduction
+
+Bulgarian Roma unambiguously face some of the most egregious social exclusion, material poverty, and discrimination in contemporary Europe. Presently, Bulgarian Roma -- often pejoratively termed gypsies or tsigani -- constitute roughly 10 percent of the population of Bulgaria [@european_commission_european_2014].^[The analysis for this paper was conducted in R. The Rmarkdown file used to create this PDF can be found at the Github repository for this project: https://github.com/AsherDvirDjerassi/BLISS---ROMA .] The European Union Agency for Fundamental Rights along with other EU agencies, the United Nations Development Program, the World Bank, and the Open Society Foundation have identified the degree of Roma discrimination and ethnic inequality in Bulgaria as abhorrent [*see* @ram_europeanized_2014; @the_economist_left_2015 ].^[According to the Bulgarian national census, Roma make up 5% of the population. However, it is widely agreed that the census dramatically underestimates the true size of the Roma population due to lack of proper registration of Roma, distrust of officials, and intentional obscuration of ethnicity for fear of prejudice (*see* @european_commission_european_2014 and @the_economist_left_2015).]  
+
+These organizations and other stakeholders have made efforts to curb discrimination towards and alleviate material poverty among Bulgarian Roma.^[One such effort was the Social Inclusion Project, a joint EU, World Bank, and Bulgarian initiative launched in 2008 and concluded in 2015. Funded by a €40 million loan guarantee from the World Bank, €73.43 million in contributions from the European Social Fund, and matched by €23.30 million in funding from local communities, this single initiative guaranteed funding equal to a quarter of a percent of Bulgaria's 2007 GDP of €48.8 billion [*see* @independent_evaluation_group_project_2018].] From 2007 to 2013, 3.2 percent (or €37 million) of the funds drawn from the European Social Fund by Bulgaria were dedicated for the explicit purpose of integrating disadvantaged people, namely Roma [@european_commission_european_2014]. Despite substantial funding dedicated towards Bulgarian Roma, the European Commission (2014) has argued that funding levels are far from sufficient to deal with the extremity of the inequality of opportunity Bulgarian Roma face. The Commission claims that Bulgaria should allocate 20 percent of the funds it is eligible to withdraw from the European Social Fund for the purpose of reducing poverty and social exclusion among Roma; this would have translated into €231 million for the 2007--2013 period, or roughly half a percent of annual GDP.
+
+Despite calls by civil society and the European Union -- alongside abundant evidence of extreme material poverty and lack of opportunity among Bulgarian Roma -- the current political make-up of Bulgaria has ensured that efforts to reduce inequality and discrimination against Roma are waning. Rather, forces of discrimination have been on the rise since the 2017 Bulgarian elections when a coalition of three ultra-rightwing parties were brought into government by Boyko Borisov, who has held the office of prime minister for a nearly continuously stretch since 2009 [*see* @dnevnik_volen_2018]. In order to maintain control of the government after an election that significantly reduced the size of the Citizens for European Development of Bulgaria (GERB), the prime minister’s party went into coalition with the United Patriots, a coalition of three ultra nationalist, anti-Roma parties that was formed in 2016.^[The following parties constitute the United Patriots: The VMRO (a faction of the Bulgarian National Movement), the National Front for the Salvation of Bulgaria (NFSB), and Ataka.]
+
+As of October 2018, 7 out of 20 ministers and deputies minister in government come from the ultra-rightwing United Patriots. Valeri Simeonov, co-leader of the ultra-right wing coalition, currently holds the position of the Deputy Prime Minister and is tasked with overseeing Bulgaria’s National Council on Co-operation on Ethnic and Integration Issues, which is intended to coordinate policy on minority rights with Bulgarian and European NGOs. Despite holding a position designed to defend minority rights, Simeonov has called the country's Roma minority "ferocious humanoids" whose women "have the instincts of street dogs"[ @katie_french_far-right_2018].
+
+## Evidence of Systematic Prejudice
+
+Drawing from survey data, Alexey Pamporov, a leading Bulgarian sociologist with the Bulgarian Academy of Sciences, writes that "approximately 30% of Bulgarians do not want Roma people living in the country"[-@pamporov_drunken_2012]. Stereotypes of Roma as "lazy," "dirty," "deceitful," and "thievish" proliferate throughout Bulgarian media, popular culture, and mainstream discourse. Pamporov argues that the prevalence of these deleterious stereotypes reinforces residential and educational segregation and leads to labor market discrimination.
+
+Pamporov, along with researchers from the Open Society Foundation, conducted content analysis on Bulgaria's leading newspapers in the few months preceding the 2009 parliamentary elections. Of the articles analyzed, 716 were identified as mentioning Roma either directly or indirectly, while "61.5% seemingly attempted to be politically correct.” These articles used "the endonyms Roma, Romani or other derivatives from these terms, [but] in the majority of articles, referring to ethnicity did not improve the articles' value and informativeness...[A quarter of articles] used the exonym Gypsies. In 55.4% of cases the protagonists are referred to as swarthy... Ethnic identity is not mentioned at all in only 1% of the articles" [@pamporov_drunken_2012, p. 145]. While Bulgarian newspapers vary widely in the share of articles that provide positive, negative, or neutral representations of Roma, typically between 11 and 33 percent of a newspaper's coverage was classified as negative. 
+
+In a set of anonymous questionnaires presented in 2011 to ethnic Bulgarians working as doctors, social workers, or teachers, it is clear that while most ethnic minorities in Bulgaria generally have positive associations, Roma do not [@metodieva_beyond_2012]. Pomaks (ethnic-Bulgarians whose ancestors converted to Islam) and Turks are most strongly associated with being "hardworking" and "religious," while Jews and Armenians are associated with business acumen and cleverness. In sharp contrast, "Roma are depicted as criminals, lazy, dirty, liars, and uneducated both by the national level survey and in the target groups’ samples."  
+
+A minority of respondents -- 11.8 percent of doctors, 26.6 percent of teachers, and 4.6 percent of social workers --  agreed with the following eugenical statement: “There should be lower educational standards for Roma children, because they are not able to achieve the result of the others." To further address any eugenical prejudices members of these three professions may have, those surveyed were asked whether Roma children should face a different, 'lightweight' curriculum. Specifically, respondents were asked to agree or disagree with the following statement: "Roma children are able most of all to sing and dance well, it is in their blood. Therefore, the key to their integration is music education and labor training." A large share of respondents claimed to neither agree nor disagree (21.3 percent of doctors, 8.6 percent of teachers, and a small fraction of social workers). While this degree of ambivalence is in and of itself indicative of eugenical prejudice, an additional 31.4 percent of doctors, 39.1 percent of teachers, and 20 percent of social workers agreed with this statement.  
+
+Likewise, 63.5 percent of doctors, 67.1 percent of teachers, and 49.1 percent of social workers agreed with the following statement: “Roma women give birth to many children in order to live on social benefits, which they receive for these children." Furthermore, 35.5 percent of doctors, 33.6 percent of teachers, and 35.1 percent of social workers also agreed with this statement: "Roma suffer from many hereditary diseases, because of marriage and sexual relations between very close relatives."
+
+Given such widespread agreement with prejudiced ideas amongst some of the most important stewards of social institutions, it should not come as a surprise that a mere 45.6 percent of ethnic Bulgarians would agree to live in the same neighborhood as Roma @metodieva_beyond_2012. Likewise, this same 2012 survey reports that a mere 12 percent of ethnic Bulgarians would be willing to marry a Roma person.
+
+
+## Ethnic Inequality and Discrimination in Bulgaria
+
+While it is beyond the scope of this article to establish the complete array of possible consequences that such stereotypes engender, the pervasiveness of negative stereotypes gives strong reason to believe that discrimination against Bulgarian Roma is widespread and plays a significant role in shaping the gap between Roma and ethnic Bulgarians. The EU Agency for Fundamental Rights surveyed minorities across Europe to find the relative incidence of hate-motivated harassment. Roma across Europe experienced the highest rate of hate-motivated harassment of any ethnic minority [@european_union_agency_for_fundamental_rights_survey_2014]. Furthermore, of all ethnic minorities in the EU, Bulgarian Roma have the second lowest level of trust in their legal system after Estonian Roma @european_union_agency_for_fundamental_rights_survey_2014
+
+Amnesty International (2018) claims that "marginalization and widespread discrimination against Roma persists." In addition to employment discrimination, Amnesty stresses the obstacles Bulgarian Roma face in accessing public services, particularly education, healthcare, housing, and infrastructure (particularly sewage, trash collection, and clean roads). The most striking and visceral manifestation of ethnic inequality in Bulgaria is the severe inadequacy of infrastructure and housing in Roma communities. According to a 2011 survey conducted by the EU Agency for Fundamental Rights, which surveyed Roma households in primarily Roma neighborhoods and ethnic Bulgarians that lived near to these communities, 39 percent of Roma dwellings had no piped water inside compared with 4 percent of non-Roma dwellings nearby (@european_union_agency_for_fundamental_rights_survey_2014). 75 percent of Roma dwellings had no indoor toilet, relative to 31 percent of non-Roma dwellings nearby. Roma versus non-Roma with dwellings connected to sewage was 39 versus 13 percent, while access to electricity was 7 percent versus 1 percent. 
+
+The root of this widespread segregation, inadequate housing, and subpar infrastructure lies partly in the forced settlement of Bulgarian Roma in 1958. After the completion of full land collectivization by the Communist regime, the Bulgarian politburo outlawed the often migratory living patterns of Roma.^[*See* @ilieva_number_2012 discussion of the Bulgarian Census]. Like the Communist Party's policy towards Bulgarian Turks, ethnic self-identification was heavily discouraged and collective advocacy for Roma causes was censured. The combination of sudden urbanization, lack of political representation, and prejudice on the part of the Communist regime created conditions where Roma were segregated into ghettos. After the fall of communism in the early 1990s, the collapse of state structures allowed for Bulgarian Roma to effectively squat in a manner comparable to Brazilian favelas and slums found elsewhere in the Global South [*see* @barany_politics_2000]. Such communities lacked and continue to lack de jure access to public services, as the state does not recognize a formal responsibility as it does in providing public services to legal dwellings. 
+
+Despite clear evidence of discrimination, Bulgarian Roma report feeling discriminated against the least often among European Roma. When asked if a Bulgarian Roma person felt they had been discriminated against in the past 12 months, 30 percent of respondents said yes -- markedly lower than the typical response in Europe.^[*See* @european_union_agency_for_fundamental_rights_second_2017] Meanwhile, a mere 19 percent of Bulgarian Roma active in the labor market believed that they had been discriminated against when seeking work in the past 5 years. Two percent of working age Bulgarian Roma respondents claimed that they were not looking for work because "Roma are not hired." In contrast, the typical response for Roma in other European countries is around 4 to 6 percent. The only other countries with lower responses to this question were Hungary and Spain.  
+
+These survey responses are puzzling. Despite widespread inequality, discrimination is not felt, particularly when it comes to the labor market. This begs the question of what relative role labor market discrimination plays in determining economic inequality between ethnic groups in Bulgaria. In terms of labor market outcomes, the gap between Roma and ethnic Bulgarians is very wide. For those of prime working age, 20--64 years old, 68 percent of non-Roma Bulgarians had at least part-time employment compared to 49 percent of Roma.^[The employment rate of ethnic Bulgarians comes from Eurostat, while the employment rate for Roma was collected in the second wave of the European Union Minorities and Discrimination Survey, 2016.]
+
+However, it may be the case that discrimination is not as instrumental in explaining this gap as the ubiquity of negative stereotypes and prejudice may suggest. Rather, it may be the case that the gap in labor market outcomes between Roma and the rest can be largely explained by differences in relevant labor market characteristics that are outside of ethnicity, such as how much education one has, the skills one possesses, and the region one lives in. In terms of education, Roma have paltry educational outcomes relative to ethnic Bulgarians. According to the 2011 Fundamental Rights Agency Roma Survey, 67 percent of adult Roma reported leaving school before the age of 16. In contrast, a mere 26 percent of non-Roma living in the same communities as these Roma reported leaving school before 16. 
+
+Decomposing the relative impact of factors driving ethnically-based economic inequality is essential to the enterprise of bridging this ethnic divide. With funds dedicated to the plight of Bulgarian Roma withering alongside the rise of ultra-rightwing political parties, ensuring the efficiency of each euro dedicated to ameliorating Roma poverty has even more urgency.
+
+## Research Question
+
+This paper seeks to answer the following: What is the relative impact of differences between non-Roma and Roma in terms of characteristics relevant to the labor market and earnings, such as educational attainment, on income disparities between these ethnic groups? Furthermore, what is the impact of being Roma, independent of such labor market factors? Otherwise stated, are there certain unobservable, Roma-specific characteristics that drive inequality between Roma and non-Roma, such as labor market discrimination or structural inequalities? 
+
+
+\newpage

@@ -1,0 +1,55 @@
+---
+title: "Untitled"
+author: "Asher Dvir-Djerassi"
+date: "5/5/2019"
+output: pdf_document
+---
+
+## Log-linear Approach
+
+This section covers the explicit functional form of the log-linear models estimated for three dependent variables.
+
+Below is the functional form of the log-linear models to be estimated for the three research questions posed above. 
+<!-- --> 
+$$
+{\scriptsize{ln(income_i)= \beta_0 + \: \beta_1 Minorities_i \: + \: \beta_2 Turk_i \: + \: X_i^T \gamma \: + \:\epsilon_{i}}}
+$$ 
+<!-- --> 
+
+## Blinder-Oaxaca Decomposition
+
+Through a three-way Blinder-Oaxaca decomposition, the relative impact of education, region, family size, and other characteristics on income disparities between ethnic minorities, particularly Roma, and ethnic Bulgarians can be ascertained. Corollary, a Blinder-Oaxaca decomposition can provide strong evidence for the extent to which economic inequality between Roma and non-Roma is due to structural and employment discrimination. 
+
+In the immediate subsections below, the explicit form of the Blinder-Oaxaca decomposition is presented. For sake of simplicity, the explicit form is presented for a general dependent variable termed income. As is done in the analysis below, all ethnic minorities are grouped together.
+<!-- --> 
+$$
+\small
+{\begin{aligned} (1)\qquad \ln(\:{\text{income}}_{Minorities_{i}})&= \beta_1 Region_{Minorities_{i}} + ... + x_{Minorities_{i}}^T \gamma+\epsilon_{Minorities_{i}} \\ (2)\qquad \ln  ({\text{income}}_{ Bulgarians_{i}}) \: & = \beta_1 Region_{\: Bulgarians_{i}}  + ... +  x_{ Bulgarians_{i}}^T \gamma+\epsilon_{ Bulgarians_{i}} \end{aligned}}
+$$
+<!-- --> 
+Fitted values from the two log-linear models are subtracted from one another as follows. 
+<!-- --> 
+$$
+\small{\begin{aligned} (3)\qquad & \; \overline{\text{income}}_{Bulgarians} \; -  \; \overline{\text{income}}_{Minorities} \; = \overline{ X}_{Bulgarians} \; \hat \beta^T_{Bulgarians} - \overline{ X}_{Minorities} \; \hat \beta^T_{Minorities} \end{aligned}}
+$$
+<!-- --> 
+Decomposing Explained and Unexplained Differences:This difference in mean income between ethnic-Bulgarians and ethnic-Minorities can be further decomposed into the portion of the gap that is the result of differences in endowments, coefficients, and the interaction of the two. 
+<!-- --> 
+a) Endowments: These are differences in observable and relevant characteristics, like one's level of education, age, and the region in which they live, that explain the gap in income between ethnic minorities and ethnic Bulgarians.
+<!-- --> 
+$$
+{\begin{aligned} (a)\qquad & \hat{\boldsymbol{\beta^T}}_{Bulgarians} ( \overline{X}_{Bulgarians} - \overline{X}_{Minorities} )\end{aligned}}
+$$
+<!-- --> 
+b) Coefficients: This component of the three-way Blinder-Oaxaca decomposition expresses the gap that is not explained by observables. For the same observable, such as for the same level of education, the coefficients term expresses how this observable is related to different economic outcomes based on which group one belongs to. For example, if for the same level of education and cetris paribus, ethnic-Bulgarians typically saw higher incomes, the coefficient term would pick-up this difference in how the same endowment may see different economic consequences. Typically in the literature, this portion of the Blinder-Oaxaca decomposition is considered to estimate the role of discrimination. 
+<!-- --> 
+$$
+{\begin{aligned}(b)\qquad & \overline{\textbf{X}^T}_{Minorities} (\space \hat{\boldsymbol{\beta}}_{Bulgarians} - \hat{\boldsymbol{\beta}}_{Minorities}) \end{aligned}} 
+$$
+<!-- --> 
+c) Interactions: Lastly, this term identifies the portion of the gap that is due to the multiplicative effect of differences in endowments and differences in the economic returns on those endowments. To continue with the example that regards education, if ethnic minorities generally saw lower returns to education and lower levels of education, this term would estimate that multiplicative effect.
+<!-- --> 
+$$
+{\begin{aligned} (b)\qquad & (\overline{ X}_{Bulgarians} - \overline{ X}_{Minorities})^T (\space \hat{\boldsymbol{\beta}}_{Bulgarians} - \hat{\boldsymbol{\beta}}_{Minorities}) \end{aligned}}
+$$
+<!-- --> 
