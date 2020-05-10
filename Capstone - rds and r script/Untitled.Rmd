@@ -1,9 +1,0 @@
----
-title: "Experiment"
-output: pdf_document
----
-
-```{r setup, include=FALSE}
-library("stargazer")
-stargazer(total_benefits, type = 'latex', title="Aggregate Household Income by Source and Survey", header=FALSE, notes        = "Sometimes you just have to start over.", notes.append = FALSE)
-```

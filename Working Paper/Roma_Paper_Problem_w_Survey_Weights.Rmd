@@ -3,13 +3,13 @@ title: "Sources of Ethnic Inequality in Bulgaria: Evidence of Roma Discriminatio
 author: "Asher Dvir-Djerassi"
 date: ""
 output:
+  bookdown::pdf_book:
+    toc: no
   pdf_document:
     fig_caption: yes
     fig_height: 6
     fig_width: 7
     number_sections: yes
-  bookdown::pdf_book:
-    toc: no
 bibliography: bibliography.bib
 geometry: margin = 1.5in
 header-includes:
@@ -24,8 +24,6 @@ nocite: '@*'
 fontsize: 11pt
 subtitle: "Writing Sample: Excerpt from Master's Thesis in Data Science"
 abstract: "Bulgarian Roma, who constitute roughly 10 percent of Bulgaria's population, unambiguously face some of the most egregious material poverty and discrimination in contemporary Europe. Corollary, income inequality between Roma and non-Roma in contemporary Bulgaria is dramatic. Mean and median monthly net wages of Roma are roughly 60 percent that of non-Roma earnings. In terms of total net monthly household income, Roma households saw average and median incomes half the size of non-Roma households. The aim of this paper is to decompose the factors leading to this inequality. Namely, the analysis undertaken here seeks to decompose the extent to which differences in endowments -- e.g. differences in educational attainment, regional differences, household composition, and demographics -- explain inequalities between Roma and non-Roma versus the role of factors specific to Roma -- e.g. employer discrimination, structural discrimination, and any other characteristics specific to this ethnic group. By applying the World Bank's 2013 Bulgarian Longitudinal Inclusive Society Survey to a log-linear model, there is clear evidence that belonging to the Roma ethnicity depreciates labor market earnings as well as total household income when controlling for other relevant labor market characteristics. Furthermore, via a Blinder-Oaxaca Decomposition, the contribution of different factors to the gap in economic outcomes between Bulgarian Roma and non-Roma are estimated. The estimates produced by both the Blinder-Oaxaca Decomposition and the log-linear model provide clear evidence that factors like structural and employment discrimination are driving economic inequality between Bulgarian Roma and non-Roma, rather than factors like educational or demographic differences."
-
-
 ---
 \inputencoding{latin2}
 
@@ -39,7 +37,6 @@ abstract: "Bulgarian Roma, who constitute roughly 10 percent of Bulgaria's popul
 
 #install.packages("tinytex")
 #tinytex::install_tinytex(force = TRUE)
-
 #install.packages("bookdown")
 library("bookdown")
 #install.packages("survey")
@@ -52,7 +49,8 @@ library("tidyverse")
 library("RefManageR")
 #install.packages("foreign")
 library("foreign")
-suppressPackageStartupMessages(library("dplyr"))
+#install.packages("dplyr")
+library("dplyr")
 library("knitr")
 #install.packages("ggplot2")
 library("ggplot2")
@@ -249,7 +247,6 @@ This representative survey was able to follow households and the members of thos
 dataset <- readRDS("/Users/asherdvir-djerassi/Library/Mobile Documents/com~apple~CloudDocs/Roma Paper/Capstone - rds and r script/dataset.rds")
 
 dim(dataset)
-kable(dataset[1:5,1:5])
 
 #NOTE: There are 7468 rows in the final data, when there should be 7467 rows. However, when creating the set of depedent and independent variables, the dataframe used in this analysis has the proper number of rows.
 
@@ -274,38 +271,38 @@ kable(dataset[1:5,1:5])
 
 # Module 2A: Labor, for Everyone in Household 15 Years and Over 
 # Module 2B: For Members who Reported Working in Past 4 Weeks
-
-dataset$M2_Q3[1:100] # Have you worked in the past 4 weeks? 
-dataset$M2_Q10A[1:100] #m2_q10 What is the total net amount that [NAME] has earned in the past 12 months
-dataset$M2_Q16A[1:100] #m2_q16a What are [NAME'S] MONTHLY AVERAGE NET wages (net of taxes and contributions). 
-dataset$M2_Q17A[1:100] #m2_q17a What are [NAME'S] MONTHLY AVERAGE NET earnings from this work or busines (current work) 
-
-#-------------------------------------
-
-#Module 5A: Social Assistance
-
-dataset$M5A_Q2_11[1:100]#What was/is the monthly value of this allowance for all household members? Monthly child benefits (for children under 18 years, or 20 if in school)
-dataset$M5A_Q3_11[1:100]#What was/is the monthly value of this allowance for all household members? Infant benefits (for children under 1 year or 2 years if disabled)
-dataset$M5A_Q4_11[1:100]#What was/is the monthly value of this allowance for all household members? Monthly social assistance for low income households
-dataset$M5A_Q5_11[1:100] #What was/is the monthly value of this allowance for all household members? Heating allowance
+# 
+# dataset$M2_Q3[1:100] # Have you worked in the past 4 weeks? 
+# dataset$M2_Q10A[1:100] #m2_q10 What is the total net amount that [NAME] has earned in the past 12 months
+# dataset$M2_Q16A[1:100] #m2_q16a What are [NAME'S] MONTHLY AVERAGE NET wages (net of taxes and contributions). 
+# dataset$M2_Q17A[1:100] #m2_q17a What are [NAME'S] MONTHLY AVERAGE NET earnings from this work or busines (current work) 
 
 #-------------------------------------
-
-#Module 5B: Unemployment Benefits
-
-dataset$M5B_Q6[1:100]#What is the monthly value of the unemployement benefits?
-
-#-------------------------------------
-
-#The dataset contains information from Module 5C: Other Social Protection
-
-dataset$M5C_Q2E[1:100]#What pensions, aid or benefits did [NAME] receive in the past 12 months? What is the monthly value of this benefit [NAME] received?
-dataset$M5C_Q3E[1:100] #What pensions, aid or benefits did [NAME] receive in the past 12 months? What is the monthly value of this benefit [NAME] received?
-
-#------------------------------------
-
-#Module 10: Subjective
-dataset$M10_Q19[1:100]#What is the total net monthly income of your household at the moment (Total sum of the household members income from salaries/wages, pensions, social and family assistance, regular transfers from persons outside the household and from other sources)?
+# 
+# #Module 5A: Social Assistance
+# 
+# dataset$M5A_Q2_11[1:100]#What was/is the monthly value of this allowance for all household members? Monthly child benefits (for children under 18 years, or 20 if in school)
+# dataset$M5A_Q3_11[1:100]#What was/is the monthly value of this allowance for all household members? Infant benefits (for children under 1 year or 2 years if disabled)
+# dataset$M5A_Q4_11[1:100]#What was/is the monthly value of this allowance for all household members? Monthly social assistance for low income households
+# dataset$M5A_Q5_11[1:100] #What was/is the monthly value of this allowance for all household members? Heating allowance
+# 
+# #-------------------------------------
+# 
+# #Module 5B: Unemployment Benefits
+# 
+# dataset$M5B_Q6[1:100]#What is the monthly value of the unemployement benefits?
+# 
+# #-------------------------------------
+# 
+# #The dataset contains information from Module 5C: Other Social Protection
+# 
+# dataset$M5C_Q2E[1:100]#What pensions, aid or benefits did [NAME] receive in the past 12 months? What is the monthly value of this benefit [NAME] received?
+# dataset$M5C_Q3E[1:100] #What pensions, aid or benefits did [NAME] receive in the past 12 months? What is the monthly value of this benefit [NAME] received?
+# 
+# #------------------------------------
+# 
+# #Module 10: Subjective
+# dataset$M10_Q19[1:100]#What is the total net monthly income of your household at the moment (Total sum of the household members income from salaries/wages, pensions, social and family assistance, regular transfers from persons outside the household and from other sources)?
 #-------------------------------------
 
 ```
@@ -314,27 +311,29 @@ dataset$M10_Q19[1:100]#What is the total net monthly income of your household at
 ```{r Clean and Transform Independent Variables, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
 
 ####Clean and Transform Independent Variables
-#----------------------------------------------
+#----------------------------------------------\
+
+
 #Combined the data above into dependent variables
 #Convert dep_vars from matrix to dataframe
-dep_vars <- as_data_frame(cbind(dataset$HH_ID, 
-                                dataset$HHM_ID, 
-                                dataset$M1_Q22, 
-                                dataset$SAMPLE_TYPE.x,
-                                dataset$M2_Q3, 
-                                dataset$M2_Q16A, 
-                                dataset$M5A_Q2_11, 
-                                dataset$M5A_Q3_11,
-                                dataset$M5A_Q4_11, 
-                                dataset$M5A_Q5_11, 
-                                dataset$M5B_Q6, 
-                                dataset$M5C_Q2E, 
-                                dataset$M5C_Q3E, 
-                                dataset$M10_Q19, 
-                                dataset$WTA_ADJ_HH, 
-                                dataset$wt_adj_bliss_cs_cs_ind, 
-                                dataset$wt_bliss_cs_cs_ind
-                                ))
+dep_vars <-  dataset %>% 
+                    select(HH_ID,
+                          HHM_ID, 
+                          M1_Q22, 
+                          SAMPLE_TYPE.x,
+                          M2_Q3, 
+                          M2_Q16A, 
+                          M5A_Q2_11, 
+                          M5A_Q3_11,
+                          M5A_Q4_11, 
+                          M5A_Q5_11, 
+                          M5B_Q6, 
+                          M5C_Q2E, 
+                          M5C_Q3E, 
+                          M10_Q19, 
+                          WTA_ADJ_HH, 
+                          wt_adj_bliss_cs_cs_ind, 
+                          wt_bliss_cs_cs_ind)
 
 #Rename columns of dependent variables dataset
 names(dep_vars) <- c("HH_id",
@@ -363,10 +362,9 @@ dep_vars$`Booster or Main Sample` <- ifelse((dep_vars$`Booster or Main Sample`)=
 dep_vars$`worked in the past 4 weeks`<-ifelse((dep_vars$`worked in the past 4 weeks`)==1,1, 0)
 
 #-------------------------------------
-
 #If ethnicity is N/A, then set ethnicity equal to the value of another member of their household, HH_id. 
-
 setDT(dep_vars)[, ethnic := unique(Ethnicity[!is.na(Ethnicity)]), by = HH_id]
+
 
 #Display the household id and member id in addition to the old ethnicity column and the new ethnicity column. 
 df <- dep_vars %>% select(HH_id, HHM_id, Ethnicity, ethnic); df[100:125]; 
@@ -550,7 +548,7 @@ rm(`heating allowance`,
     HH_weight)
 ```
 
-```{r weighted dataset, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+```{r message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
 
 total_benefits <- list()
 
@@ -676,13 +674,13 @@ table(total_recipients)
 ```
 
 
-```{r weighted dataset, message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
+```{r message=FALSE, warning=FALSE, echo = FALSE, results="hide"}
 
 #Weighted dataset
-weighted_dataset <-svydesign(id=~1, `household weights`=~dep_vars$`household weights`, data=dep_vars)
+weighted_dataset <-svydesign(id=~1, weights = ~"household weights" , data = dep_vars)
 
 #Table of weighted 
-weighted_table <- svyCreateTableOne(vars = "pensions", data=weighted_dataset)
+weighted_table <- svyCreateTableOne(vars = "pensions", data=weighted_dataset$variables)
 
 #Print weighted table of pensions, for those with positive pension values. 
 print(weighted_table, smd= TRUE) #Weighted data
